@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Dipam Store</title>
+  <script src="https://cdn.jsdelivr.net/npm/emailjs-com@2/dist/email.min.js"></script>
+  <style>
+    body { margin:0; font-family: Arial, sans-serif; background:#f1f3f6; }
+    header {
+      background:#2874f0; color:white; padding:10px 20px;
+      display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap;
+    }
+    header h1 { margin:0; font-size:22px; cursor:pointer; }
+    .header-buttons { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+    .btn-header {
+      background:#ff9f00; border:none; padding:8px 15px; color:white;
+      cursor:pointer; font-weight:bold; border-radius:4px;
+    }
+    .search-box {
+      display:flex; align-items:center; background:white; border-radius:4px; overflow:hidden;
+    }
+    .search-box input {
+      border:none; padding:8px; outline:none; width:200px;
+    }
+    .search-box button {
+      background:#ff9f00; border:none; padding:8px; cursor:pointer; color:white;
+    }
+    .product-grid {
+      display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+      gap:15px; padding:20px;
+    }
+    .product {
+      background:white; border-radius:6px; padding:10px; text-align:center;
+      box-shadow:0 1px 4px rgba(0,0,0,0.1);
+    }
+    .product img { max-width:100%; height:150px; object-fit:cover; }
+    .product h3 { font-size:18px; margin:10px 0 5px; }
+    .btn { margin:5px; padding:8px 12px; border:none; cursor:pointer; border-radius:4px; font-weight:bold; }
+    .buy-btn { background:#fb641b; color:white; }
+    .add-btn { background:#ff9f00; color:white; }
+
+    .modal {
+      display:none; position:fixed; top:0; left:0; width:100%; height:100%;
+      background:rgba(0,0,0,0.5); z-index:100;
+    }
+    .modal-content {
+      background:white; width:90%; max-width:500px; margin:50px auto; padding:20px;
+      border-radius:6px; max-height:80%; overflow-y:auto;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1 onclick="goHome()">Dipam Store</h1>
+  <div class="search-box">
+    <input type="text" id="searchInput" placeholder="Search products...">
+    <button onclick="searchProducts()">Search</button>
+  </div>
+  <div class="header-buttons">
+    <button class="btn-header" onclick="goHome()">Home</button>
+    <button class="btn-header" onclick="openCart()">My Cart (<span id='cartCount'>0</span>)</button>
+    <button class="btn-header" onclick="openOrders()">My Orders</button>
+  </div>
+</header>
+
+<div class="product-grid" id="productGrid"></div>
+
+<div class="modal" id="cartModal">
+  <div class="modal-content">
+    <h2>My Cart</h2>
+    <div id="cartItems"></div>
+    <p><strong>Total: ₹<span id="totalPrice">0</span></strong></p>
+    <input type="text" id="custName" placeholder="Your Name" style="width:100%;padding:8px;margin:5px 0;">
+    <input type="text" id="custAddress" placeholder="Your Address" style="width:100%;padding:8px;margin:5px 0;">
+    <input type="text" id="custPhone" placeholder="Your Phone" style="width:100%;padding:8px;margin:5px 0;">
+    <button class="buy-btn" onclick="checkout()">Place Order</button>
+    <button class="add-btn" onclick="closeCart()">Close</button>
+  </div>
+</div>
+
+<div class="modal" id="ordersModal">
+  <div class="modal-content">
+    <h2>My Orders</h2>
+    <div id="ordersList"></div>
+    <button class="add-btn" onclick="closeOrders()">Close</button>
+  </div>
+</div>
+
+<script>
+  (function(){
+    emailjs.init("E8cAV9p-pSYDnM8kE"); // Public key
+  })();
+
+  const products = [
+    { name: "Smartphone X", price: 14999, image: "https://via.placeholder.com/200" },
+    { name: "Wireless Earbuds", price: 1999, image: "https://via.placeholder.com/200" },
+    { name: "Sports Shoes", price: 2999, image: "https://via.placeholder.com/200" },
+    { name: "Backpack", price: 999, image: "https://via.placeholder.com/200" }
+  ];
+
+  let cart = [];
+  let filteredProducts = [...products];
+
+  function renderProducts(list = filteredProducts) {
+    const grid = document.getElementById("productGrid");
+    grid.innerHTML = "";
+    list.forEach((p) => {
+      grid.innerHTML += `
+        <div class="product">
+          <img src="${p.image}" alt="${p.name}">
+          <h3>${p.name}</h3>
+          <p>₹${p.price}</p>
+          <button class="btn buy-btn" onclick="buyNow(${products.indexOf(p)})">Buy Now</button>
+          <button class="btn add-btn" onclick="addToCart(${products.indexOf(p)})">Add to Cart</button>
+        </div>
+      `;
+    });
+  }
+
+  function addToCart(index) {
+    cart.push(products[index]);
+    updateCartCount();
+  }
+
+  function buyNow(index) {
+    cart = [products[index]];
+    openCart();
+  }
+
+  function openCart() {
+    document.getElementById("cartModal").style.display = "block";
+    renderCart();
+  }
+
+  function closeCart() {
+    document.getElementById("cartModal").style.display = "none";
+  }
+
+  function renderCart() {
+    const cartItems = document.getElementById("cartItems");
+    cartItems.innerHTML = "";
+    let total = 0;
+    cart.forEach(item => {
+      total += item.price;
+      cartItems.innerHTML += `<p>${item.name} - ₹${item.price}</p>`;
+    });
+    document.getElementById("totalPrice").innerText = total;
+  }
+
+  function updateCartCount() {
+    document.getElementById("cartCount").innerText = cart.length;
+  }
+
+  function checkout() {
+    const name = document.getElementById("custName").value;
+    const address = document.getElementById("custAddress").value;
+    const phone = document.getElementById("custPhone").value;
+
+    if (!name || !address || !phone) {
+      alert("Please fill all details!");
+      return;
+    }
+
+    const orderDetails = cart.map(p => `${p.name} - ₹${p.price}`).join("\n");
+    const total = cart.reduce((sum, p) => sum + p.price, 0);
+
+    const templateParams = {
+      to_email: "dipamghosh85@gmail.com",
+      from_name: name,
+      address: address,
+      phone: phone,
+      order_list: orderDetails,
+      total_price: total
+    };
+
+    emailjs.send("service_c4p68ag", "template_214uijp", templateParams)
+      .then(() => {
+        saveOrder(name, orderDetails, total);
+        alert("Order placed! We will contact you soon.");
+        cart = [];
+        updateCartCount();
+        closeCart();
+      }, (err) => {
+        alert("Failed to send order. Please try again.");
+        console.error(err);
+      });
+  }
+
+  function saveOrder(name, details, total) {
+    let orders = JSON.parse(localStorage.getItem("myOrders")) || [];
+    orders.push({ customer: name, details, total, date: new Date().toLocaleString() });
+    localStorage.setItem("myOrders", JSON.stringify(orders));
+  }
+
+  function openOrders() {
+    document.getElementById("ordersModal").style.display = "block";
+    renderOrders();
+  }
+
+  function closeOrders() {
+    document.getElementById("ordersModal").style.display = "none";
+  }
+
+  function renderOrders() {
+    const ordersList = document.getElementById("ordersList");
+    let orders = JSON.parse(localStorage.getItem("myOrders")) || [];
+    if (orders.length === 0) {
+      ordersList.innerHTML = "<p>No orders found.</p>";
+      return;
+    }
+    ordersList.innerHTML = "";
+    orders.forEach(order => {
+      ordersList.innerHTML += `
+        <div style="border-bottom:1px solid #ccc; padding:8px 0;">
+          <p><strong>${order.customer}</strong> (${order.date})</p>
+          <pre>${order.details}</pre>
+          <p><strong>Total:</strong> ₹${order.total}</p>
+        </div>
+      `;
+    });
+  }
+
+  function searchProducts() {
+    const query = document.getElementById("searchInput").value.toLowerCase();
+    filteredProducts = products.filter(p => p.name.toLowerCase().includes(query));
+    renderProducts();
+  }
+
+  function goHome() {
+    document.getElementById("searchInput").value = "";
+    filteredProducts = [...products];
+    renderProducts();
+  }
+
+  renderProducts();
+</script>
+
+</body>
+</html>
