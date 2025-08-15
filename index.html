@@ -1,291 +1,273 @@
 <!doctype html>
-<html lang="en">
+<html lang='en'>
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>DipamShop — Flipkart‑style App (Online DB)</title>
-
-<!-- EmailJS SDK -->
-<script src="https://cdn.jsdelivr.net/npm/emailjs-com@3.2.0/dist/email.min.js"></script>
-<!-- Firebase SDKs -->
-<script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-storage-compat.js"></script>
-
+<meta charset='utf-8' />
+<meta name='viewport' content='width=device-width,initial-scale=1' />
+<title>DS-MART</title>
+<script src='https://cdn.jsdelivr.net/npm/emailjs-com@3.2.0/dist/email.min.js'></script>
+<script src='https://www.gstatic.com/firebasejs/10.12.4/firebase-app-compat.js'></script>
+<script src='https://www.gstatic.com/firebasejs/10.12.4/firebase-auth-compat.js'></script>
+<script src='https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore-compat.js'></script>
+<script src='https://www.gstatic.com/firebasejs/10.12.4/firebase-storage-compat.js'></script>
 <style>
-  :root{
-    --primary:#2874f0; --accent:#ff6f00; --muted:#666; --card:#fff; --bg:#f3f4f6; --maxw:1100px;
-  }
-  *{box-sizing:border-box}
-  body{font-family:Inter,system-ui,Arial,sans-serif;background:var(--bg);margin:0;display:flex;justify-content:center}
-  .app{width:100%;max-width:var(--maxw);padding:16px}
-  header{display:flex;align-items:center;gap:12px;background:var(--primary);color:#fff;padding:12px;border-radius:8px}
-  .logo{font-weight:800;font-size:1.2rem;cursor:pointer}
-  .search{flex:1;display:flex;gap:8px}
-  .search input{flex:1;padding:8px;border-radius:6px;border:0;font-size:14px}
-  .icon-btn{background:transparent;color:#fff;border:1px solid rgba(255,255,255,0.2);padding:8px 10px;border-radius:8px;cursor:pointer}
-  .badge{background:#fff;color:var(--primary);padding:6px 8px;border-radius:999px;font-weight:700}
-  .menu{position:relative}
-  .menu-list{position:absolute;right:0;top:120%;background:#fff;color:#222;min-width:200px;border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.15);display:none;flex-direction:column;overflow:hidden;z-index:20}
-  .menu-list.open{display:flex}
-  .menu-list button{padding:10px 12px;text-align:left;border:0;background:#fff;cursor:pointer}
-  .menu-list button:hover{background:#f5f7fb}
-
-  main{display:grid;grid-template-columns:250px 1fr;gap:16px;margin-top:14px}
-  @media (max-width:900px){ main{grid-template-columns:1fr} .left-col{order:2} }
-
-  .left-col{background:var(--card);padding:12px;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,0.04)}
-  .cat{font-weight:700;margin-bottom:8px}
-  .cat-list button{display:block;width:100%;text-align:left;padding:8px;border-radius:6px;border:0;background:transparent;cursor:pointer}
-
-  .store{display:grid;gap:12px}
-  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-  @media (max-width:1100px){ .grid{grid-template-columns:repeat(2,1fr)} }
-  @media (max-width:600px){ .grid{grid-template-columns:1fr} }
-  .card{background:var(--card);padding:12px;border-radius:10px;box-shadow:0 8px 20px rgba(10,10,10,0.04);display:flex;flex-direction:column;gap:8px}
-  .card img{width:100%;height:170px;object-fit:cover;border-radius:8px}
-  .card h3{margin:0;font-size:1rem}
-  .price{font-weight:800;color:var(--primary)}
-  .card .actions{display:flex;gap:8px;margin-top:auto}
-  .btn{padding:8px;border-radius:8px;border:0;cursor:pointer}
-  .btn.primary{background:var(--primary);color:#fff}
-  .btn.ghost{background:transparent;border:1px solid #ddd}
-
-  .cart-drawer{position:fixed;right:18px;top:18px;background:var(--card);width:360px;max-width:92vw;border-radius:10px;box-shadow:0 20px 60px rgba(10,10,10,0.25);z-index:200;display:none;flex-direction:column}
-  .cart-drawer.open{display:flex}
-  .cart-header{display:flex;justify-content:space-between;align-items:center;padding:12px;border-bottom:1px solid #eee}
-  .cart-body{padding:12px;max-height:60vh;overflow:auto}
-  .cart-item{display:flex;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid #f1f1f1}
-  .cart-item img{width:64px;height:64px;object-fit:cover;border-radius:8px}
-  .checkout-row{padding:12px;border-top:1px solid #eee;display:flex;justify-content:space-between;align-items:center}
-
-  .modal-back{position:fixed;inset:0;background:rgba(0,0,0,0.45);display:none;align-items:center;justify-content:center;z-index:300}
-  .modal{width:100%;max-width:720px;background:#fff;padding:16px;border-radius:10px}
-  .form-row{display:flex;gap:8px}
-  .form-row > *{flex:1}
-  .small{font-size:13px;color:var(--muted)}
-
-  .pill{display:inline-flex;gap:6px;align-items:center;background:#eef4ff;color:#2257cf;padding:4px 8px;border-radius:999px;font-weight:700}
+:root{--primary:#2874f0;--accent:#ff6f00;--muted:#666;--card:#fff;--bg:#f3f4f6;--maxw:1100px}
+*{box-sizing:border-box}
+body{font-family:Inter,system-ui,Arial,sans-serif;background:var(--bg);margin:0;display:flex;justify-content:center}
+.app{width:100%;max-width:var(--maxw);padding:16px}
+header{display:flex;align-items:center;gap:12px;background:var(--primary);color:#fff;padding:12px;border-radius:8px}
+.logo{font-weight:800;font-size:1.2rem;cursor:pointer}
+.search{flex:1;display:flex;gap:8px}
+.search input{flex:1;padding:8px;border-radius:6px;border:0;font-size:14px}
+.icon-btn{background:transparent;color:#fff;border:1px solid rgba(255,255,255,0.2);padding:8px 10px;border-radius:8px;cursor:pointer}
+.badge{background:#fff;color:var(--primary);padding:6px 8px;border-radius:999px;font-weight:700}
+.menu{position:relative}
+.menu-list{position:absolute;right:0;top:120%;background:#fff;color:#222;min-width:220px;border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.15);display:none;flex-direction:column;overflow:hidden;z-index:20}
+.menu-list.open{display:flex}
+.menu-list button{padding:10px 12px;text-align:left;border:0;background:#fff;cursor:pointer}
+.menu-list button:hover{background:#f5f7fb}
+main{display:grid;grid-template-columns:250px 1fr;gap:16px;margin-top:14px}
+@media (max-width:900px){ main{grid-template-columns:1fr} .left-col{order:2} }
+.left-col{background:var(--card);padding:12px;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,0.04)}
+.cat{font-weight:700;margin-bottom:8px}
+.cat-list button{display:block;width:100%;text-align:left;padding:8px;border-radius:6px;border:0;background:transparent;cursor:pointer}
+.store{display:grid;gap:12px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media (max-width:1100px){ .grid{grid-template-columns:repeat(2,1fr)} }
+@media (max-width:600px){ .grid{grid-template-columns:1fr} }
+.card{background:var(--card);padding:12px;border-radius:10px;box-shadow:0 8px 20px rgba(10,10,10,0.04);display:flex;flex-direction:column;gap:8px}
+.card img{width:100%;height:170px;object-fit:cover;border-radius:8px}
+.card h3{margin:0;font-size:1rem}
+.price{font-weight:800;color:var(--primary)}
+.card .actions{display:flex;gap:8px;margin-top:auto}
+.btn{padding:8px;border-radius:8px;border:0;cursor:pointer}
+.btn.primary{background:var(--primary);color:#fff}
+.btn.ghost{background:transparent;border:1px solid #ddd}
+.cart-drawer{position:fixed;right:18px;top:18px;background:var(--card);width:360px;max-width:92vw;border-radius:10px;box-shadow:0 20px 60px rgba(10,10,10,0.25);z-index:200;display:none;flex-direction:column}
+.cart-drawer.open{display:flex}
+.cart-header{display:flex;justify-content:space-between;align-items:center;padding:12px;border-bottom:1px solid #eee}
+.cart-body{padding:12px;max-height:60vh;overflow:auto}
+.cart-item{display:flex;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid #f1f1f1}
+.cart-item img{width:64px;height:64px;object-fit:cover;border-radius:8px}
+.checkout-row{padding:12px;border-top:1px solid #eee;display:flex;justify-content:space-between;align-items:center}
+.modal-back{position:fixed;inset:0;background:rgba(0,0,0,0.45);display:none;align-items:center;justify-content:center;z-index:300}
+.modal{width:100%;max-width:720px;background:#fff;padding:16px;border-radius:10px}
+.form-row{display:flex;gap:8px}
+.form-row > *{flex:1}
+.small{font-size:13px;color:#666}
+.pill{display:inline-flex;gap:6px;align-items:center;background:#eef4ff;color:#2257cf;padding:4px 8px;border-radius:999px;font-weight:700}
 </style>
 </head>
 <body>
-<div class="app" id="app">
+<div class='app' id='app'>
   <header>
-    <div class="logo" id="homeBtn">DipamShop</div>
-
-    <div class="search">
-      <input id="searchInput" placeholder="Search for products, brands and more" />
-      <button class="icon-btn" id="searchBtn">Search</button>
+    <div class='logo' id='homeBtn'>DS-MART</div>
+    <div class='search'>
+      <input id='searchInput' placeholder='Search for products, brands and more' />
+      <button class='icon-btn' id='searchBtn'>Search</button>
     </div>
-
-    <div class="top-actions" style="display:flex;gap:8px;align-items:center">
-      <button class="icon-btn" id="homeTop">Home</button>
-      <div class="badge" id="cartCount">0</div>
-      <button class="icon-btn" id="toggleCart">Cart</button>
-
-      <!-- Settings menu (Add Product + My Profile + Owner Sign In/Out) -->
-      <div class="menu">
-        <button class="icon-btn" id="settingsBtn">Settings ▾</button>
-        <div class="menu-list" id="settingsMenu">
-          <button id="openAddProduct">Add Product (owner)</button>
-          <button id="openProfile">My Profile</button>
-          <hr style="margin:0;border:none;border-top:1px solid #eee"/>
-          <button id="ownerSignIn">Owner Sign In</button>
-          <button id="ownerSignOut" style="display:none">Owner Sign Out</button>
+    <div class='top-actions' style='display:flex;gap:8px;align-items:center'>
+      <button class='icon-btn' id='homeTop'>Home</button>
+      <div class='badge' id='cartCount'>0</div>
+      <button class='icon-btn' id='toggleCart'>Cart</button>
+      <div class='menu'>
+        <button class='icon-btn' id='settingsBtn'>Settings ▾</button>
+        <div class='menu-list' id='settingsMenu'>
+          <button id='openAddProduct'>Add Product (owner)</button>
+          <button id='openProfile'>My Profile</button>
+          <button id='openMyOrders'>My Orders</button>
+          <hr style='margin:0;border:none;border-top:1px solid #eee'/>
+          <button id='ownerSignIn'>Owner Sign In</button>
+          <button id='ownerSignOut' style='display:none'>Owner Sign Out</button>
         </div>
       </div>
     </div>
   </header>
-
   <main>
-    <aside class="left-col">
-      <div class="cat">Categories</div>
-      <div class="cat-list" id="categoryList"></div>
-      <hr style="margin:12px 0" />
-      <div class="small">Tip: Use <strong>Settings → Add Product</strong> to add products (owner only).</div>
-      <div id="ownerStatus" class="small" style="margin-top:8px"></div>
+    <aside class='left-col'>
+      <div class='cat'>Categories</div>
+      <div class='cat-list' id='categoryList'></div>
+      <hr style='margin:12px 0' />
+      <div class='small'>Tip: Use <strong>Settings → Add Product</strong> to add products (owner only).</div>
+      <div id='ownerStatus' class='small' style='margin-top:8px'></div>
     </aside>
-
-    <section class="store">
-      <div style="display:flex;justify-content:space-between;align-items:end">
-        <h2 style="margin:0">Products</h2>
-        <div class="small" id="productCount">0 items</div>
+    <section class='store'>
+      <div style='display:flex;justify-content:space-between;align-items:end'>
+        <h2 style='margin:0'>Products</h2>
+        <div class='small' id='productCount'>0 items</div>
       </div>
-
-      <div class="grid" id="productGrid"></div>
+      <div class='grid' id='productGrid'></div>
     </section>
   </main>
 </div>
 
-<!-- Cart drawer -->
-<div class="cart-drawer" id="cartDrawer" aria-hidden="true">
-  <div class="cart-header">
-    <div style="font-weight:700">Your Cart</div>
+<div class='cart-drawer' id='cartDrawer' aria-hidden='true'>
+  <div class='cart-header'>
+    <div style='font-weight:700'>Your Cart</div>
     <div>
-      <button id="clearCartBtn" class="btn ghost">Clear</button>
-      <button id="closeCartBtn" class="btn">✕</button>
+      <button id='clearCartBtn' class='btn ghost'>Clear</button>
+      <button id='closeCartBtn' class='btn'>✕</button>
     </div>
   </div>
-  <div class="cart-body" id="cartBody"></div>
-  <div class="checkout-row">
+  <div class='cart-body' id='cartBody'></div>
+  <div class='checkout-row'>
     <div>
-      <div class="small">Total</div>
-      <div id="cartTotal" style="font-weight:800">₹0.00</div>
+      <div class='small'>Total</div>
+      <div id='cartTotal' style='font-weight:800'>₹0.00</div>
     </div>
-    <div>
-      <button class="btn primary" id="checkoutBtn">Checkout</button>
-    </div>
+    <div><button class='btn primary' id='checkoutBtn'>Checkout</button></div>
   </div>
 </div>
 
-<!-- Add Product modal (owner only) -->
-<div class="modal-back" id="addProductModal">
-  <div class="modal" role="dialog" aria-modal="true">
-    <div style="display:flex;justify-content:space-between;align-items:center">
+<div class='modal-back' id='addProductModal'>
+  <div class='modal' role='dialog' aria-modal='true'>
+    <div style='display:flex;justify-content:space-between;align-items:center'>
       <h3>Add Product</h3>
-      <div>
-        <button id="closeAddProduct" class="btn ghost">Close</button>
-      </div>
+      <div><button id='closeAddProduct' class='btn ghost'>Close</button></div>
     </div>
-
-    <form id="addProductForm" style="margin-top:10px;display:grid;gap:8px" autocomplete="off">
-      <input id="pTitle" placeholder="Product title" required />
-      <div class="form-row">
-        <input id="pPrice" type="number" min="0" step="0.01" placeholder="Price (₹)" required />
-        <input id="pCategory" placeholder="Category (e.g., Electronics)" required />
+    <form id='addProductForm' style='margin-top:10px;display:grid;gap:8px' autocomplete='off'>
+      <input id='pTitle' placeholder='Product title' required />
+      <div class='form-row'>
+        <input id='pPrice' type='number' min='0' step='0.01' placeholder='Price (₹)' required />
+        <input id='pCategory' placeholder='Category (e.g., Electronics)' required />
       </div>
-      <div class="small">Image: Upload file OR paste an image URL</div>
-      <div class="form-row">
-        <input id="pImageUrl" placeholder="Image URL (optional)" />
-        <input id="pImageFile" type="file" accept="image/*" />
+      <div class='small'>Image: Upload file OR paste an image URL</div>
+      <div class='form-row'>
+        <input id='pImageUrl' placeholder='Image URL (optional)' />
+        <input id='pImageFile' type='file' accept='image/*' />
       </div>
-      <button class="btn primary" type="submit">Add product</button>
+      <button class='btn primary' type='submit'>Add product</button>
     </form>
   </div>
 </div>
 
-<!-- My Profile modal (customer local profile) -->
-<div class="modal-back" id="profileModal">
-  <div class="modal">
-    <div style="display:flex;justify-content:space-between;align-items:center">
+<div class='modal-back' id='profileModal'>
+  <div class='modal'>
+    <div style='display:flex;justify-content:space-between;align-items:center'>
       <h3>My Profile</h3>
-      <button id="closeProfile" class="btn ghost">Close</button>
+      <button id='closeProfile' class='btn ghost'>Close</button>
     </div>
-    <form id="profileForm" style="display:grid;gap:8px;margin-top:10px">
-      <input id="profName" placeholder="Your name" />
-      <input id="profPhone" placeholder="Phone" />
-      <textarea id="profAddress" rows="3" placeholder="Shipping address"></textarea>
-      <button class="btn primary" type="submit">Save</button>
-    </form>
-    <div class="small" style="margin-top:8px">Saved on this device for faster checkout.</div>
+    <div id='profileNotLogged'>
+      <div class='small'>Login or create an account with your mobile number and password.</div>
+      <form id='loginForm' style='display:grid;gap:8px;margin-top:10px'>
+        <input id='loginPhone' placeholder='Mobile number (e.g., +91XXXXXXXXXX)' required />
+        <input id='loginPass' type='password' placeholder='Password' required />
+        <button class='btn primary' type='submit'>Login</button>
+      </form>
+      <div class='small' style='margin-top:8px'>New customer?</div>
+      <form id='signupForm' style='display:grid;gap:8px;margin-top:6px'>
+        <input id='suName' placeholder='Full name' required />
+        <input id='suPhone' placeholder='Mobile number (e.g., +91XXXXXXXXXX)' required />
+        <input id='suPass' type='password' placeholder='Password (min 6 chars)' required />
+        <textarea id='suAddress' rows='3' placeholder='Address (optional)'></textarea>
+        <button class='btn' type='submit'>Create Account</button>
+      </form>
+    </div>
+    <div id='profileLogged' style='display:none'>
+      <div><strong>Signed in as</strong> <span id='profUserPhone' class='pill'></span></div>
+      <form id='profileForm' style='display:grid;gap:8px;margin-top:10px'>
+        <input id='profName' placeholder='Your name' />
+        <input id='profPhone' placeholder='Phone' disabled />
+        <textarea id='profAddress' rows='3' placeholder='Shipping address'></textarea>
+        <div style='display:flex;gap:8px'>
+          <button class='btn primary' type='submit'>Save</button>
+          <button class='btn' id='logoutBtn' type='button'>Logout</button>
+        </div>
+      </form>
+    </div>
   </div>
 </div>
 
-<!-- Checkout modal -->
-<div class="modal-back" id="checkoutModal">
-  <div class="modal">
-    <div style="display:flex;justify-content:space-between;align-items:center">
-      <h3>Checkout</h3>
-      <button id="closeCheckout" class="btn ghost">Close</button>
+<div class='modal-back' id='ordersModal'>
+  <div class='modal'>
+    <div style='display:flex;justify-content:space-between;align-items:center'>
+      <h3>My Orders</h3>
+      <button id='closeOrders' class='btn ghost'>Close</button>
     </div>
+    <div id='ordersList' style='margin-top:10px'></div>
+  </div>
+</div>
 
-    <div id="checkoutSummary" style="margin-top:8px"></div>
-
-    <form id="checkoutForm" style="display:grid;gap:8px;margin-top:10px">
-      <input id="custName" placeholder="Full name" required />
-      <input id="custPhone" placeholder="Phone number" required />
-      <textarea id="custAddress" rows="3" placeholder="Shipping address" required></textarea>
-
-      <div style="display:flex;gap:8px;align-items:center">
-        <div style="flex:1">
-          <div class="small">Total amount</div>
-          <div id="checkoutAmount" style="font-weight:800">₹0.00</div>
+<div class='modal-back' id='checkoutModal'>
+  <div class='modal'>
+    <div style='display:flex;justify-content:space-between;align-items:center'>
+      <h3>Checkout</h3>
+      <button id='closeCheckout' class='btn ghost'>Close</button>
+    </div>
+    <div id='checkoutSummary' style='margin-top:8px'></div>
+    <form id='checkoutForm' style='display:grid;gap:8px;margin-top:10px'>
+      <input id='custName' placeholder='Full name' required />
+      <input id='custPhone' placeholder='Phone number' required />
+      <textarea id='custAddress' rows='3' placeholder='Shipping address' required></textarea>
+      <div style='display:flex;gap:8px;align-items:center'>
+        <div style='flex:1'>
+          <div class='small'>Total amount</div>
+          <div id='checkoutAmount' style='font-weight:800'>₹0.00</div>
         </div>
-        <button class="btn primary" type="submit">Place Order</button>
+        <button class='btn primary' type='submit'>Place Order</button>
       </div>
     </form>
-
-    <div id="orderMsg" style="display:none;margin-top:10px;color:green;font-weight:700"></div>
+    <div id='orderMsg' style='display:none;margin-top:10px;color:green;font-weight:700'></div>
   </div>
 </div>
 
 <script>
-/**********************
- * CONFIG (EDIT THESE)
- **********************/
-// 1) EmailJS — using your credentials provided
-(function(){ emailjs.init("E8cAV9p-pSYDnM8kE"); })();
-const ORDER_NOTIFICATION_EMAIL = 'dipamghosh85@gmail.com';
+(function(){ emailjs.init('E8cAV9p-pSYDnM8kE'); })();
+const ORDER_NOTIFICATION_EMAIL = 'dipamghosh220@gmail.com';
 const EMAILJS_SERVICE_ID = 'service_c4p68ag';
 const EMAILJS_TEMPLATE_ID = 'template_214uijp';
 
-// 2) Firebase — REPLACE with your Firebase project config
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT_ID.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: 'YOUR_API_KEY',
+  authDomain: 'YOUR_PROJECT_ID.firebaseapp.com',
+  projectId: 'YOUR_PROJECT_ID',
+  storageBucket: 'YOUR_PROJECT_ID.appspot.com',
+  messagingSenderId: 'YOUR_SENDER_ID',
+  appId: 'YOUR_APP_ID'
 };
-
-// Owner email that gets write access (secure in rules)
 const OWNER_EMAIL = 'dipamghosh85@gmail.com';
 
-/**********************
- * INIT FIREBASE
- **********************/
 const appFB = firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 const storage = firebase.storage();
 
-/**********************
- * STATE
- **********************/
 const CART_KEY = 'dipam_cart_v2';
-const PROFILE_KEY = 'dipam_profile_v1';
-let cart = JSON.parse(localStorage.getItem(CART_KEY) || '[]'); // [{id, title, price, qty, image}]
+const PROFILE_KEY = 'dipam_profile_v2';
+let cart = JSON.parse(localStorage.getItem(CART_KEY) || '[]');
 let currentFilter = 'All';
 let currentSearch = '';
 
-/**********************
- * HELPERS
- **********************/
 const fmt = n => '₹' + Number(n||0).toFixed(2);
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,7);
-const q = sel => document.querySelector(sel);
 const el = id => document.getElementById(id);
-
+const sha256 = async (message) => {
+  const msgUint8 = new TextEncoder().encode(message);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+};
+function escapeHtml(str){ return String(str||'').replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 function saveCart(){ localStorage.setItem(CART_KEY, JSON.stringify(cart)); renderCart(); updateCartBadge(); }
 function updateCartBadge(){ el('cartCount').textContent = cart.reduce((s,c)=>s + (c.qty||0), 0); }
+function saveProfileLocal(p){ localStorage.setItem(PROFILE_KEY, JSON.stringify(p)); }
+function loadProfileLocal(){ try{ return JSON.parse(localStorage.getItem(PROFILE_KEY)||'null'); }catch(e){ return null; } }
 
-/**********************
- * PRODUCTS (FIRESTORE)
- **********************/
-// Firestore structure: products/{docId} => { title, price: number, category, imageUrl, createdAt }
 async function fetchProducts(){
   const snap = await db.collection('products').orderBy('createdAt','desc').get();
   return snap.docs.map(d=>({ id:d.id, ...d.data() }));
 }
-
 async function addProductToDB({title, price, category, imageUrl}){
   const doc = await db.collection('products').add({
     title, price:Number(price), category:category||'General', imageUrl: imageUrl||'', createdAt: firebase.firestore.FieldValue.serverTimestamp()
   });
   return doc.id;
 }
-
 async function uploadImageToStorage(file){
   const ref = storage.ref().child('product-images/' + Date.now() + '-' + file.name.replace(/\s+/g,'_'));
   await ref.put(file);
   return await ref.getDownloadURL();
 }
 
-/**********************
- * RENDER PRODUCTS & CATEGORIES
- **********************/
 const productGrid = el('productGrid');
 const productCountEl = el('productCount');
 const categoryListEl = el('categoryList');
@@ -295,7 +277,6 @@ function categoriesFromProducts(){
   const s = new Set(allProducts.map(p => p.category || 'General'));
   return ['All', ...Array.from(s)];
 }
-
 function renderCategories(){
   categoryListEl.innerHTML = '';
   categoriesFromProducts().forEach(cat=>{
@@ -304,7 +285,9 @@ function renderCategories(){
     categoryListEl.appendChild(b);
   });
 }
-
+function placeholderSVG(){
+  return `data:image/svg+xml;utf8,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="600" height="400"><rect width="100%" height="100%" fill="#eee"/><text x="50%" y="50%" font-size="28" text-anchor="middle" fill="#888" dy=".3em">No Image</text></svg>')}`;
+}
 function renderProducts(){
   const shown = allProducts.filter(p=>{
     if (currentFilter !== 'All' && p.category !== currentFilter) return false;
@@ -328,17 +311,9 @@ function renderProducts(){
   });
 }
 
-function placeholderSVG(){
-  return `data:image/svg+xml;utf8,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="600" height="400"><rect width="100%" height="100%" fill="#eee"/><text x="50%" y="50%" font-size="28" text-anchor="middle" fill="#888" dy=".3em">No Image</text></svg>')}`;
-}
-
-/**********************
- * CART & CHECKOUT
- **********************/
 const cartDrawer = el('cartDrawer');
 const cartBody = el('cartBody');
 const cartTotalEl = el('cartTotal');
-
 function renderCart(){
   cartBody.innerHTML = '';
   if (cart.length===0){ cartBody.innerHTML = '<div class="small">Cart is empty</div>'; cartTotalEl.textContent = fmt(0); return; }
@@ -364,45 +339,71 @@ function renderCart(){
   });
   cartTotalEl.textContent = fmt(total);
 }
-
 function addToCartItem(p, qty=1){
   const existing = cart.find(c=>c.id===p.id);
   if (existing) existing.qty += qty; else cart.push({ id:p.id, title:p.title, price:p.price, image:p.imageUrl, qty });
   saveCart();
 }
-
 function changeQty(id, delta){ const c = cart.find(x=>x.id===id); if(!c) return; c.qty += delta; if (c.qty<=0) cart = cart.filter(x=>x.id!==id); saveCart(); }
 function removeFromCart(id){ cart = cart.filter(c=>c.id!==id); saveCart(); }
 
-/**********************
- * CHECKOUT + EmailJS + Firestore orders
- **********************/
+// Customer auth (Firestore mobile+password)
+const USERS_COL = 'users';
+function currentUser(){ try{return JSON.parse(localStorage.getItem(PROFILE_KEY)||'null');}catch(e){return null;} }
+async function signUpMobilePassword({name, phone, password, address}){
+  if (password.length < 6) throw new Error('Password must be at least 6 characters');
+  const passHash = await sha256(password);
+  const exists = await db.collection(USERS_COL).where('phone','==',phone).limit(1).get();
+  if (!exists.empty) throw new Error('Account already exists for this mobile');
+  const ref = await db.collection(USERS_COL).add({
+    name, phone, passHash, address: address||'', createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  });
+  localStorage.setItem(PROFILE_KEY, JSON.stringify({ uid: ref.id, name, phone, address: address||'' }));
+  return { uid: ref.id, name, phone, address: address||'' };
+}
+async function loginMobilePassword({phone, password}){
+  const passHash = await sha256(password);
+  const snap = await db.collection(USERS_COL).where('phone','==',phone).where('passHash','==',passHash).limit(1).get();
+  if (snap.empty) throw new Error('Invalid mobile or password');
+  const doc = snap.docs[0]; const u = { uid: doc.id, ...doc.data() };
+  localStorage.setItem(PROFILE_KEY, JSON.stringify({ uid: u.uid, name: u.name||'', phone: u.phone, address: u.address||'' }));
+  return { uid: u.uid, name: u.name||'', phone: u.phone, address: u.address||'' };
+}
+function logoutLocal(){ localStorage.removeItem(PROFILE_KEY); }
+async function updateProfileInDB({uid, name, address}){
+  await db.collection(USERS_COL).doc(uid).update({ name, address });
+  const cur = currentUser(); if (cur){ localStorage.setItem(PROFILE_KEY, JSON.stringify({ ...cur, name, address })); }
+}
+
+// My Orders
+async function fetchMyOrders(phone){
+  const snap = await db.collection('orders').where('customerPhone','==',phone).orderBy('createdAt','desc').get();
+  return snap.docs.map(d=>({ id:d.id, ...d.data() }));
+}
+
+// Checkout
 const checkoutModal = el('checkoutModal');
 const checkoutForm = el('checkoutForm');
 const checkoutAmountEl = el('checkoutAmount');
 const checkoutSummary = el('checkoutSummary');
 const orderMsg = el('orderMsg');
 let checkoutItems = [];
-
 function openCheckoutModal(items){
   checkoutItems = items;
   const lines = items.map(ci=> `${escapeHtml(ci.title)} × ${ci.qty} (${fmt(ci.price*ci.qty)})`);
   const total = items.reduce((s,it)=> s + it.price*it.qty, 0);
   checkoutSummary.innerHTML = `<div class="small">Items:</div><div>${lines.join('<br/>')}</div>`;
   checkoutAmountEl.textContent = fmt(total);
-  const prof = loadProfile();
+  const prof = currentUser();
   if (prof){ el('custName').value = prof.name||''; el('custPhone').value = prof.phone||''; el('custAddress').value = prof.address||''; }
   orderMsg.style.display = 'none'; orderMsg.style.color = 'green';
   checkoutModal.style.display = 'flex';
 }
-
 function closeCheckout(){ checkoutModal.style.display = 'none'; }
-
 async function placeOrderToDB(order){
   const ref = await db.collection('orders').add(order);
   return ref.id;
 }
-
 async function sendOrderEmail(order){
   const templateParams = {
     to_email: ORDER_NOTIFICATION_EMAIL,
@@ -415,94 +416,46 @@ async function sendOrderEmail(order){
   };
   return emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams);
 }
-
 checkoutForm.addEventListener('submit', async (e)=>{
   e.preventDefault();
+  const prof = currentUser();
   const name = el('custName').value.trim();
   const phone = el('custPhone').value.trim();
   const address = el('custAddress').value.trim();
   if (!name || !phone || !address) return alert('Fill all fields');
-
   const orderId = 'ORD-' + uid().toUpperCase();
   const total = checkoutItems.reduce((s,it)=> s + it.price*it.qty, 0);
   const order = {
     orderId,
     createdAt: firebase.firestore.FieldValue.serverTimestamp(),
     customerName: name, phone, address,
+    customerPhone: phone,
+    userUid: prof ? prof.uid : null,
     items: checkoutItems.map(i=> ({ id:i.id, title:i.title, price:i.price, qty:i.qty })),
     total,
     status: 'new'
   };
-
   try{
     await placeOrderToDB(order);
     await sendOrderEmail(order);
     orderMsg.style.display = 'block';
     orderMsg.textContent = `Order ${orderId} placed — email sent to ${ORDER_NOTIFICATION_EMAIL}.`;
-    // Save a local copy for customer My Orders
-    saveCustomerOrderLocal(order);
-    // Clear full cart if checking out all cart items
     if (checkoutItems.length === cart.length) { cart = []; saveCart(); }
     checkoutForm.reset();
   }catch(err){
     console.error(err);
     orderMsg.style.display = 'block';
     orderMsg.style.color = 'red';
-    orderMsg.textContent = 'Order saved locally but email or DB failed. Please retry.';
+    orderMsg.textContent = 'Order failed to save/email. Please retry.';
   }
 });
 
-/**********************
- * CUSTOMER — My Orders (local history for this device)
- **********************/
-const MY_ORDERS_KEY = 'dipam_my_orders_v1';
-function saveCustomerOrderLocal(order){
-  const list = JSON.parse(localStorage.getItem(MY_ORDERS_KEY)||'[]');
-  list.unshift({ ...order, createdAtLocal: new Date().toISOString() });
-  localStorage.setItem(MY_ORDERS_KEY, JSON.stringify(list));
-}
-function getCustomerOrdersLocal(){ return JSON.parse(localStorage.getItem(MY_ORDERS_KEY)||'[]'); }
-
-// Simple modal to show local orders (reusing ordersModal from earlier version)
-const ordersModal = document.createElement('div');
-ordersModal.className = 'modal-back'; ordersModal.id = 'ordersModal';
-ordersModal.innerHTML = `<div class="modal"><div style="display:flex;justify-content:space-between;align-items:center"><h3>My Orders</h3><button id="closeOrders" class="btn ghost">Close</button></div><div id="ordersList" style="margin-top:10px"></div></div>`;
-document.body.appendChild(ordersModal);
-
-function openOrders(){ ordersModal.style.display = 'flex'; renderOrdersLocal(); }
-function closeOrders(){ ordersModal.style.display = 'none'; }
-
-function renderOrdersLocal(){
-  const ordersList = el('ordersList');
-  const orders = getCustomerOrdersLocal();
-  if (orders.length===0){ ordersList.innerHTML = '<div class="small">No orders on this device.</div>'; return; }
-  ordersList.innerHTML = '';
-  orders.forEach(o=>{
-    const div = document.createElement('div');
-    div.style.cssText = 'border-bottom:1px solid #eee;padding:8px 0';
-    const items = o.items.map(i=> `${escapeHtml(i.title)} × ${i.qty} (${fmt(i.price*i.qty)})`).join('<br/>');
-    div.innerHTML = `<div><strong>${escapeHtml(o.customerName)}</strong> • <span class="pill">${o.orderId}</span></div><div class="small">${new Date(o.createdAtLocal||Date.now()).toLocaleString()}</div><div style="margin-top:6px">${items}</div><div style="margin-top:6px"><strong>Total:</strong> ${fmt(o.total)}</div>`;
-    ordersList.appendChild(div);
-  });
-}
-
-/**********************
- * PROFILE (local for faster checkout)
- **********************/
-function saveProfile(p){ localStorage.setItem(PROFILE_KEY, JSON.stringify(p)); }
-function loadProfile(){ try{ return JSON.parse(localStorage.getItem(PROFILE_KEY)||'null'); }catch(e){ return null; } }
-
-/**********************
- * OWNER AUTH (Firebase Auth Email/Password)
- **********************/
-// Shows owner status
+// Owner email/password for admin add product
 function showOwnerStatus(user){
-  if (user && user.email === OWNER_EMAIL){ el('ownerStatus').innerHTML = `<span class="pill">Owner signed in: ${escapeHtml(user.email)}</span>`; el('ownerSignIn').style.display='none'; el('ownerSignOut').style.display='block'; }
+  if (user && user.email === OWNER_EMAIL){ el('ownerStatus').innerHTML = `<span class="pill">Owner signed in: ${user.email}</span>`; el('ownerSignIn').style.display='none'; el('ownerSignOut').style.display='block'; }
   else { el('ownerStatus').innerHTML = '<span class="small">Owner not signed in</span>'; el('ownerSignIn').style.display='block'; el('ownerSignOut').style.display='none'; }
 }
-
 auth.onAuthStateChanged(user=>{ showOwnerStatus(user); });
-
 async function ownerSignInFlow(){
   const email = OWNER_EMAIL;
   const pwd = prompt('Enter owner password for ' + email + ':');
@@ -510,46 +463,92 @@ async function ownerSignInFlow(){
   try{ await auth.signInWithEmailAndPassword(email, pwd); alert('Owner signed in'); }
   catch(e){ if (e.code==='auth/user-not-found'){ alert('Owner account not found. Create it in Firebase Auth with email ' + email); } else alert('Sign in failed: '+e.message); }
 }
-
 async function ownerSignOutFlow(){ await auth.signOut(); alert('Signed out'); }
 
-/**********************
- * UI HOOKUPS
- **********************/
-// Header / search / home
+// UI hookups
 el('homeBtn').onclick = () => { currentSearch=''; el('searchInput').value=''; currentFilter='All'; renderProducts(); };
 el('homeTop').onclick = el('homeBtn').onclick;
 el('searchBtn').onclick = ()=>{ currentSearch = el('searchInput').value.trim(); renderProducts(); };
 
-// Settings menu
 const settingsBtn = el('settingsBtn');
 const settingsMenu = el('settingsMenu');
 settingsBtn.addEventListener('click', ()=> settingsMenu.classList.toggle('open'));
 document.addEventListener('click', (e)=>{ if (!settingsBtn.contains(e.target) && !settingsMenu.contains(e.target)) settingsMenu.classList.remove('open'); });
 
-// Add Product modal open/close (owner only)
 el('openAddProduct').onclick = ()=>{
   if (!auth.currentUser || auth.currentUser.email !== OWNER_EMAIL){ alert('Owner sign in required'); return; }
   el('addProductModal').style.display = 'flex';
 };
 el('closeAddProduct').onclick = ()=> el('addProductModal').style.display = 'none';
 
-// Profile modal
-el('openProfile').onclick = ()=>{
-  const p = loadProfile(); if (p){ el('profName').value = p.name||''; el('profPhone').value = p.phone||''; el('profAddress').value = p.address||''; }
-  el('profileModal').style.display = 'flex';
-};
+// Profile open/close + render
+el('openProfile').onclick = ()=>{ renderProfileUI(); el('profileModal').style.display = 'flex'; };
 el('closeProfile').onclick = ()=> el('profileModal').style.display = 'none';
 
-document.getElementById('profileForm').addEventListener('submit', (e)=>{
+function renderProfileUI(){
+  const prof = currentUser();
+  const notLogged = el('profileNotLogged');
+  const logged = el('profileLogged');
+  if (prof){
+    notLogged.style.display = 'none';
+    logged.style.display = 'block';
+    el('profUserPhone').textContent = prof.phone;
+    el('profName').value = prof.name||'';
+    el('profPhone').value = prof.phone||'';
+    el('profAddress').value = prof.address||'';
+  }else{
+    notLogged.style.display = 'block';
+    logged.style.display = 'none';
+    el('loginForm').reset();
+    el('signupForm').reset();
+  }
+}
+el('loginForm').addEventListener('submit', async (e)=>{
   e.preventDefault();
-  saveProfile({ name: el('profName').value.trim(), phone: el('profPhone').value.trim(), address: el('profAddress').value.trim() });
-  alert('Profile saved on this device'); el('profileModal').style.display = 'none';
+  const phone = el('loginPhone').value.trim();
+  const pass = el('loginPass').value;
+  try{ await loginMobilePassword({ phone, password: pass }); alert('Logged in'); renderProfileUI(); }
+  catch(err){ alert(err.message || 'Login failed'); }
 });
+el('signupForm').addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  const name = el('suName').value.trim();
+  const phone = el('suPhone').value.trim();
+  const pass = el('suPass').value;
+  const address = el('suAddress').value.trim();
+  try{ await signUpMobilePassword({ name, phone, password: pass, address }); alert('Account created & logged in'); renderProfileUI(); }
+  catch(err){ alert(err.message || 'Signup failed'); }
+});
+el('logoutBtn').addEventListener('click', ()=>{ logoutLocal(); alert('Logged out'); renderProfileUI(); });
 
-// Owner sign in/out
-el('ownerSignIn').onclick = ownerSignInFlow;
-el('ownerSignOut').onclick = ownerSignOutFlow;
+// My Orders
+el('openMyOrders').onclick = async ()=>{
+  const prof = currentUser();
+  if (!prof){ alert('Please log in (My Profile) to see your orders'); return; }
+  el('ordersModal').style.display = 'flex';
+  await renderMyOrders(prof.phone);
+};
+el('closeOrders').onclick = ()=> el('ordersModal').style.display = 'none';
+async function renderMyOrders(phone){
+  const ordersList = el('ordersList');
+  ordersList.innerHTML = '<div class="small">Loading…</div>';
+  try{
+    const orders = await fetchMyOrders(phone);
+    if (orders.length===0){ ordersList.innerHTML = '<div class="small">No orders yet.</div>'; return; }
+    ordersList.innerHTML = '';
+    orders.forEach(o=>{
+      const div = document.createElement('div');
+      div.style.cssText = 'border-bottom:1px solid #eee;padding:8px 0';
+      const items = (o.items||[]).map(i=> `${escapeHtml(i.title)} × ${i.qty} (${fmt(i.price*i.qty)})`).join('<br/>');
+      const dateStr = o.createdAt?.toDate ? o.createdAt.toDate().toLocaleString() : new Date().toLocaleString();
+      div.innerHTML = `<div><strong>${escapeHtml(o.customerName||'')}</strong> • <span class="pill">${o.orderId}</span></div>
+                       <div class="small">${dateStr}</div>
+                       <div style="margin-top:6px">${items}</div>
+                       <div style="margin-top:6px"><strong>Total:</strong> ${fmt(o.total)} &nbsp; <span class="small">Status: ${escapeHtml(o.status||'new')}</span></div>`;
+      ordersList.appendChild(div);
+    });
+  }catch(e){ console.error(e); ordersList.innerHTML = '<div class="small">Failed to load orders. Check rules.</div>'; }
+}
 
 // Product grid buttons
 productGrid.addEventListener('click', (e)=>{
@@ -564,7 +563,6 @@ productGrid.addEventListener('click', (e)=>{
 el('toggleCart').onclick = ()=> cartDrawer.classList.toggle('open');
 el('closeCartBtn').onclick = ()=> cartDrawer.classList.remove('open');
 el('clearCartBtn').onclick = ()=>{ if (!confirm('Clear cart?')) return; cart = []; saveCart(); };
-
 cartBody.addEventListener('click', (e)=>{
   const btn = e.target.closest('button'); if (!btn) return;
   const action = btn.getAttribute('data-action'); const id = btn.getAttribute('data-id');
@@ -577,104 +575,19 @@ cartBody.addEventListener('click', (e)=>{
 el('checkoutBtn').onclick = ()=>{ if (cart.length===0) return alert('Cart empty'); openCheckoutModal(cart.map(c=>({ ...c }))); };
 el('closeCheckout').onclick = closeCheckout;
 
-// Add Product form submit
-el('addProductForm').addEventListener('submit', async (e)=>{
-  e.preventDefault();
-  if (!auth.currentUser || auth.currentUser.email !== OWNER_EMAIL){ return alert('Owner sign in required'); }
-  const title = el('pTitle').value.trim();
-  const price = Number(el('pPrice').value);
-  const category = el('pCategory').value.trim() || 'General';
-  const url = el('pImageUrl').value.trim();
-  const file = el('pImageFile').files[0];
-  if (!title || !(price>=0)) return alert('Enter title and valid price');
-  let imageUrl = url;
-  try{
-    if (file){ imageUrl = await uploadImageToStorage(file); }
-    const id = await addProductToDB({ title, price, category, imageUrl });
-    alert('Product added');
-    el('addProductForm').reset(); el('addProductModal').style.display='none';
-    await reloadProducts();
-  }catch(err){ console.error(err); alert('Failed to add product. Check console.'); }
-});
+// Owner sign in/out
+el('ownerSignIn').onclick = ownerSignInFlow;
+el('ownerSignOut').onclick = ownerSignOutFlow;
 
-/**********************
- * ESCAPE & PLACEHOLDER
- **********************/
-function escapeHtml(str){ return String(str||'').replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
-
-/**********************
- * LOAD & START
- **********************/
+// Load
 async function reloadProducts(){ allProducts = await fetchProducts(); renderCategories(); renderProducts(); }
-(async function init(){
-  try{ await reloadProducts(); }catch(e){ console.warn('Failed to load products (maybe rules not set yet). Showing placeholders.'); allProducts = []; renderCategories(); renderProducts(); }
-  renderCart(); updateCartBadge();
-})();
+(async function init(){ try{ await reloadProducts(); }catch(e){ allProducts = []; renderCategories(); renderProducts(); } renderCart(); updateCartBadge(); })();
 
-/**********************
- * OPEN/CLOSE other modals clicking outside
- **********************/
 ['addProductModal','profileModal','checkoutModal','ordersModal'].forEach(id=>{
   const m = el(id); if (!m) return; m.addEventListener('click', (e)=>{ if (e.target===m) m.style.display='none'; });
 });
-
-// Expose openOrders to header cart area (we created ordersModal dynamically above)
-window.openOrders = openOrders; window.closeOrders = closeOrders;
 </script>
 
-<!--
-============================================================
-FIREBASE SECURITY RULES (paste into Firestore Rules)
-============================================================
-
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    function isOwner() {
-      return request.auth != null && request.auth.token.email == 'dipamghosh85@gmail.com';
-    }
-
-    // PRODUCTS — public read, owner write
-    match /products/{id} {
-      allow read: if true;
-      allow create, update, delete: if isOwner();
-    }
-
-    // ORDERS — anyone can create (checkout), only owner can read/list or update status
-    match /orders/{id} {
-      allow create: if true;
-      allow read, list, update, delete: if isOwner();
-    }
-  }
-}
-
-============================================================
-FIREBASE STORAGE RULES (for product images)
-============================================================
-rules_version = '2';
-service firebase.storage {
-  match /b/{bucket}/o {
-    function isOwner(){ return request.auth != null && request.auth.token.email == 'dipamghosh85@gmail.com'; }
-    match /product-images/{allPaths=**} {
-      allow read: if true;
-      allow write: if isOwner();
-    }
-  }
-}
-
-============================================================
-HOW TO DEPLOY
-============================================================
-1) Create a Firebase project → Enable Authentication (Email/Password), Firestore, and Storage.
-2) In Authentication → Users, create an owner user with email: dipamghosh85@gmail.com and a password (you set it). Keep it secret.
-3) Copy your Firebase config (SDK snippet) and replace in firebaseConfig above.
-4) Firestore Rules: paste the rules from this comment and Publish.
-5) Storage Rules: paste the storage rules and Publish.
-6) (Optional) Firebase Hosting: `npm i -g firebase-tools` → `firebase login` → `firebase init hosting` → put this HTML as `public/index.html` → `firebase deploy`.
-7) EmailJS is already set. Make sure your EmailJS template has variables: from_name, to_email, order_id, order_items, amount, phone, address.
-
-Now your products, orders, and images are saved online for your domain. Only you (owner) can add products or view all orders from Firestore.
--->
-
+<!-- Firestore & Storage rules and setup guidance are inside the README as well. -->
 </body>
 </html>
