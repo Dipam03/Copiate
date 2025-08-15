@@ -1,240 +1,680 @@
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>D-Store</title>
-  <script src="https://cdn.jsdelivr.net/npm/emailjs-com@2/dist/email.min.js"></script>
-  <style>
-    body { margin:0; font-family: Arial, sans-serif; background:#d9d7f1; }
-    header {
-      background:#57dbdb; color:white; padding:10px 20px;
-      display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap;
-    }
-    header h1 { margin:0; font-size:22px; cursor:pointer; }
-    .header-buttons { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
-    .btn-header {
-      background:#5e6ecb; border:none; padding:8px 15px; color:white;
-      cursor:pointer; font-weight:bold; border-radius:4px;
-    }
-    .search-box {
-      display:flex; align-items:center; background:white; border-radius:4px; overflow:hidden;
-    }
-    .search-box input {
-      border:none; padding:8px; outline:none; width:200px;
-    }
-    .search-box button {
-      background:#5e6ecb; border:none; padding:8px; cursor:pointer; color:white;
-    }
-    .product-grid {
-      display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
-      gap:15px; padding:20px;
-    }
-    .product {
-      background:white; border-radius:6px; padding:10px; text-align:center;
-      box-shadow:0 1px 4px rgba(0,0,0,0.1);
-    }
-    .product img { max-width:100%; height:150px; object-fit:cover; }
-    .product h3 { font-size:18px; margin:10px 0 5px; }
-    .btn { margin:5px; padding:8px 12px; border:none; cursor:pointer; border-radius:4px; font-weight:bold; }
-    .buy-btn { background:#fb641b; color:white; }
-    .add-btn { background:#ff9f00; color:white; }
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>DipamShop — Flipkart‑style App (Online DB)</title>
 
-    .modal {
-      display:none; position:fixed; top:0; left:0; width:100%; height:100%;
-      background:rgba(0,0,0,0.5); z-index:100;
-    }
-    .modal-content {
-      background:white; width:90%; max-width:500px; margin:50px auto; padding:20px;
-      border-radius:6px; max-height:80%; overflow-y:auto;
-    }
-  </style>
+<!-- EmailJS SDK -->
+<script src="https://cdn.jsdelivr.net/npm/emailjs-com@3.2.0/dist/email.min.js"></script>
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-storage-compat.js"></script>
+
+<style>
+  :root{
+    --primary:#2874f0; --accent:#ff6f00; --muted:#666; --card:#fff; --bg:#f3f4f6; --maxw:1100px;
+  }
+  *{box-sizing:border-box}
+  body{font-family:Inter,system-ui,Arial,sans-serif;background:var(--bg);margin:0;display:flex;justify-content:center}
+  .app{width:100%;max-width:var(--maxw);padding:16px}
+  header{display:flex;align-items:center;gap:12px;background:var(--primary);color:#fff;padding:12px;border-radius:8px}
+  .logo{font-weight:800;font-size:1.2rem;cursor:pointer}
+  .search{flex:1;display:flex;gap:8px}
+  .search input{flex:1;padding:8px;border-radius:6px;border:0;font-size:14px}
+  .icon-btn{background:transparent;color:#fff;border:1px solid rgba(255,255,255,0.2);padding:8px 10px;border-radius:8px;cursor:pointer}
+  .badge{background:#fff;color:var(--primary);padding:6px 8px;border-radius:999px;font-weight:700}
+  .menu{position:relative}
+  .menu-list{position:absolute;right:0;top:120%;background:#fff;color:#222;min-width:200px;border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.15);display:none;flex-direction:column;overflow:hidden;z-index:20}
+  .menu-list.open{display:flex}
+  .menu-list button{padding:10px 12px;text-align:left;border:0;background:#fff;cursor:pointer}
+  .menu-list button:hover{background:#f5f7fb}
+
+  main{display:grid;grid-template-columns:250px 1fr;gap:16px;margin-top:14px}
+  @media (max-width:900px){ main{grid-template-columns:1fr} .left-col{order:2} }
+
+  .left-col{background:var(--card);padding:12px;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,0.04)}
+  .cat{font-weight:700;margin-bottom:8px}
+  .cat-list button{display:block;width:100%;text-align:left;padding:8px;border-radius:6px;border:0;background:transparent;cursor:pointer}
+
+  .store{display:grid;gap:12px}
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  @media (max-width:1100px){ .grid{grid-template-columns:repeat(2,1fr)} }
+  @media (max-width:600px){ .grid{grid-template-columns:1fr} }
+  .card{background:var(--card);padding:12px;border-radius:10px;box-shadow:0 8px 20px rgba(10,10,10,0.04);display:flex;flex-direction:column;gap:8px}
+  .card img{width:100%;height:170px;object-fit:cover;border-radius:8px}
+  .card h3{margin:0;font-size:1rem}
+  .price{font-weight:800;color:var(--primary)}
+  .card .actions{display:flex;gap:8px;margin-top:auto}
+  .btn{padding:8px;border-radius:8px;border:0;cursor:pointer}
+  .btn.primary{background:var(--primary);color:#fff}
+  .btn.ghost{background:transparent;border:1px solid #ddd}
+
+  .cart-drawer{position:fixed;right:18px;top:18px;background:var(--card);width:360px;max-width:92vw;border-radius:10px;box-shadow:0 20px 60px rgba(10,10,10,0.25);z-index:200;display:none;flex-direction:column}
+  .cart-drawer.open{display:flex}
+  .cart-header{display:flex;justify-content:space-between;align-items:center;padding:12px;border-bottom:1px solid #eee}
+  .cart-body{padding:12px;max-height:60vh;overflow:auto}
+  .cart-item{display:flex;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid #f1f1f1}
+  .cart-item img{width:64px;height:64px;object-fit:cover;border-radius:8px}
+  .checkout-row{padding:12px;border-top:1px solid #eee;display:flex;justify-content:space-between;align-items:center}
+
+  .modal-back{position:fixed;inset:0;background:rgba(0,0,0,0.45);display:none;align-items:center;justify-content:center;z-index:300}
+  .modal{width:100%;max-width:720px;background:#fff;padding:16px;border-radius:10px}
+  .form-row{display:flex;gap:8px}
+  .form-row > *{flex:1}
+  .small{font-size:13px;color:var(--muted)}
+
+  .pill{display:inline-flex;gap:6px;align-items:center;background:#eef4ff;color:#2257cf;padding:4px 8px;border-radius:999px;font-weight:700}
+</style>
 </head>
 <body>
+<div class="app" id="app">
+  <header>
+    <div class="logo" id="homeBtn">DipamShop</div>
 
-<header>
-  <h1 onclick="goHome()">D-Store</h1>
-  <div class="search-box">
-    <input type="text" id="searchInput" placeholder="Search products...">
-    <button onclick="searchProducts()">Search</button>
+    <div class="search">
+      <input id="searchInput" placeholder="Search for products, brands and more" />
+      <button class="icon-btn" id="searchBtn">Search</button>
+    </div>
+
+    <div class="top-actions" style="display:flex;gap:8px;align-items:center">
+      <button class="icon-btn" id="homeTop">Home</button>
+      <div class="badge" id="cartCount">0</div>
+      <button class="icon-btn" id="toggleCart">Cart</button>
+
+      <!-- Settings menu (Add Product + My Profile + Owner Sign In/Out) -->
+      <div class="menu">
+        <button class="icon-btn" id="settingsBtn">Settings ▾</button>
+        <div class="menu-list" id="settingsMenu">
+          <button id="openAddProduct">Add Product (owner)</button>
+          <button id="openProfile">My Profile</button>
+          <hr style="margin:0;border:none;border-top:1px solid #eee"/>
+          <button id="ownerSignIn">Owner Sign In</button>
+          <button id="ownerSignOut" style="display:none">Owner Sign Out</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <aside class="left-col">
+      <div class="cat">Categories</div>
+      <div class="cat-list" id="categoryList"></div>
+      <hr style="margin:12px 0" />
+      <div class="small">Tip: Use <strong>Settings → Add Product</strong> to add products (owner only).</div>
+      <div id="ownerStatus" class="small" style="margin-top:8px"></div>
+    </aside>
+
+    <section class="store">
+      <div style="display:flex;justify-content:space-between;align-items:end">
+        <h2 style="margin:0">Products</h2>
+        <div class="small" id="productCount">0 items</div>
+      </div>
+
+      <div class="grid" id="productGrid"></div>
+    </section>
+  </main>
+</div>
+
+<!-- Cart drawer -->
+<div class="cart-drawer" id="cartDrawer" aria-hidden="true">
+  <div class="cart-header">
+    <div style="font-weight:700">Your Cart</div>
+    <div>
+      <button id="clearCartBtn" class="btn ghost">Clear</button>
+      <button id="closeCartBtn" class="btn">✕</button>
+    </div>
   </div>
-  <div class="header-buttons">
-    <button class="btn-header" onclick="goHome()">Home</button>
-    <button class="btn-header" onclick="openCart()">My Cart (<span id='cartCount'>0</span>)</button>
-    <button class="btn-header" onclick="openOrders()">My Orders</button>
-  </div>
-</header>
-
-<div class="product-grid" id="productGrid"></div>
-
-<div class="modal" id="cartModal">
-  <div class="modal-content">
-    <h2>My Cart</h2>
-    <div id="cartItems"></div>
-    <p><strong>Total: ₹<span id="totalPrice">0</span></strong></p>
-    <input type="text" id="custName" placeholder="Your Name" style="width:100%;padding:8px;margin:5px 0;">
-    <input type="text" id="custAddress" placeholder="Your Address" style="width:100%;padding:8px;margin:5px 0;">
-    <input type="text" id="custPhone" placeholder="Your Phone" style="width:100%;padding:8px;margin:5px 0;">
-    <button class="buy-btn" onclick="checkout()">Place Order</button>
-    <button class="add-btn" onclick="closeCart()">Close</button>
+  <div class="cart-body" id="cartBody"></div>
+  <div class="checkout-row">
+    <div>
+      <div class="small">Total</div>
+      <div id="cartTotal" style="font-weight:800">₹0.00</div>
+    </div>
+    <div>
+      <button class="btn primary" id="checkoutBtn">Checkout</button>
+    </div>
   </div>
 </div>
 
-<div class="modal" id="ordersModal">
-  <div class="modal-content">
-    <h2>My Orders</h2>
-    <div id="ordersList"></div>
-    <button class="add-btn" onclick="closeOrders()">Close</button>
+<!-- Add Product modal (owner only) -->
+<div class="modal-back" id="addProductModal">
+  <div class="modal" role="dialog" aria-modal="true">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <h3>Add Product</h3>
+      <div>
+        <button id="closeAddProduct" class="btn ghost">Close</button>
+      </div>
+    </div>
+
+    <form id="addProductForm" style="margin-top:10px;display:grid;gap:8px" autocomplete="off">
+      <input id="pTitle" placeholder="Product title" required />
+      <div class="form-row">
+        <input id="pPrice" type="number" min="0" step="0.01" placeholder="Price (₹)" required />
+        <input id="pCategory" placeholder="Category (e.g., Electronics)" required />
+      </div>
+      <div class="small">Image: Upload file OR paste an image URL</div>
+      <div class="form-row">
+        <input id="pImageUrl" placeholder="Image URL (optional)" />
+        <input id="pImageFile" type="file" accept="image/*" />
+      </div>
+      <button class="btn primary" type="submit">Add product</button>
+    </form>
+  </div>
+</div>
+
+<!-- My Profile modal (customer local profile) -->
+<div class="modal-back" id="profileModal">
+  <div class="modal">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <h3>My Profile</h3>
+      <button id="closeProfile" class="btn ghost">Close</button>
+    </div>
+    <form id="profileForm" style="display:grid;gap:8px;margin-top:10px">
+      <input id="profName" placeholder="Your name" />
+      <input id="profPhone" placeholder="Phone" />
+      <textarea id="profAddress" rows="3" placeholder="Shipping address"></textarea>
+      <button class="btn primary" type="submit">Save</button>
+    </form>
+    <div class="small" style="margin-top:8px">Saved on this device for faster checkout.</div>
+  </div>
+</div>
+
+<!-- Checkout modal -->
+<div class="modal-back" id="checkoutModal">
+  <div class="modal">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <h3>Checkout</h3>
+      <button id="closeCheckout" class="btn ghost">Close</button>
+    </div>
+
+    <div id="checkoutSummary" style="margin-top:8px"></div>
+
+    <form id="checkoutForm" style="display:grid;gap:8px;margin-top:10px">
+      <input id="custName" placeholder="Full name" required />
+      <input id="custPhone" placeholder="Phone number" required />
+      <textarea id="custAddress" rows="3" placeholder="Shipping address" required></textarea>
+
+      <div style="display:flex;gap:8px;align-items:center">
+        <div style="flex:1">
+          <div class="small">Total amount</div>
+          <div id="checkoutAmount" style="font-weight:800">₹0.00</div>
+        </div>
+        <button class="btn primary" type="submit">Place Order</button>
+      </div>
+    </form>
+
+    <div id="orderMsg" style="display:none;margin-top:10px;color:green;font-weight:700"></div>
   </div>
 </div>
 
 <script>
-  (function(){
-    emailjs.init("E8cAV9p-pSYDnM8kE"); // Public key
-  })();
+/**********************
+ * CONFIG (EDIT THESE)
+ **********************/
+// 1) EmailJS — using your credentials provided
+(function(){ emailjs.init("E8cAV9p-pSYDnM8kE"); })();
+const ORDER_NOTIFICATION_EMAIL = 'dipamghosh85@gmail.com';
+const EMAILJS_SERVICE_ID = 'service_c4p68ag';
+const EMAILJS_TEMPLATE_ID = 'template_214uijp';
 
-  const products = [
-    { name: "Smartphone X", price: 14999, image: "https://via.placeholder.com/200" },
-    { name: "Wireless Earbuds", price: 1999, image: "https://via.placeholder.com/200" },
-    { name: "Sports Shoes", price: 2999, image: "https://via.placeholder.com/200" },
-    { name: "Backpack", price: 999, image: "https://via.placeholder.com/200" }
-  ];
+// 2) Firebase — REPLACE with your Firebase project config
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_PROJECT_ID.appspot.com",
+  messagingSenderId: "YOUR_SENDER_ID",
+  appId: "YOUR_APP_ID"
+};
 
-  let cart = [];
-  let filteredProducts = [...products];
+// Owner email that gets write access (secure in rules)
+const OWNER_EMAIL = 'dipamghosh85@gmail.com';
 
-  function renderProducts(list = filteredProducts) {
-    const grid = document.getElementById("productGrid");
-    grid.innerHTML = "";
-    list.forEach((p) => {
-      grid.innerHTML += `
-        <div class="product">
-          <img src="${p.image}" alt="${p.name}">
-          <h3>${p.name}</h3>
-          <p>₹${p.price}</p>
-          <button class="btn buy-btn" onclick="buyNow(${products.indexOf(p)})">Buy Now</button>
-          <button class="btn add-btn" onclick="addToCart(${products.indexOf(p)})">Add to Cart</button>
+/**********************
+ * INIT FIREBASE
+ **********************/
+const appFB = firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+const storage = firebase.storage();
+
+/**********************
+ * STATE
+ **********************/
+const CART_KEY = 'dipam_cart_v2';
+const PROFILE_KEY = 'dipam_profile_v1';
+let cart = JSON.parse(localStorage.getItem(CART_KEY) || '[]'); // [{id, title, price, qty, image}]
+let currentFilter = 'All';
+let currentSearch = '';
+
+/**********************
+ * HELPERS
+ **********************/
+const fmt = n => '₹' + Number(n||0).toFixed(2);
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+const q = sel => document.querySelector(sel);
+const el = id => document.getElementById(id);
+
+function saveCart(){ localStorage.setItem(CART_KEY, JSON.stringify(cart)); renderCart(); updateCartBadge(); }
+function updateCartBadge(){ el('cartCount').textContent = cart.reduce((s,c)=>s + (c.qty||0), 0); }
+
+/**********************
+ * PRODUCTS (FIRESTORE)
+ **********************/
+// Firestore structure: products/{docId} => { title, price: number, category, imageUrl, createdAt }
+async function fetchProducts(){
+  const snap = await db.collection('products').orderBy('createdAt','desc').get();
+  return snap.docs.map(d=>({ id:d.id, ...d.data() }));
+}
+
+async function addProductToDB({title, price, category, imageUrl}){
+  const doc = await db.collection('products').add({
+    title, price:Number(price), category:category||'General', imageUrl: imageUrl||'', createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  });
+  return doc.id;
+}
+
+async function uploadImageToStorage(file){
+  const ref = storage.ref().child('product-images/' + Date.now() + '-' + file.name.replace(/\s+/g,'_'));
+  await ref.put(file);
+  return await ref.getDownloadURL();
+}
+
+/**********************
+ * RENDER PRODUCTS & CATEGORIES
+ **********************/
+const productGrid = el('productGrid');
+const productCountEl = el('productCount');
+const categoryListEl = el('categoryList');
+let allProducts = [];
+
+function categoriesFromProducts(){
+  const s = new Set(allProducts.map(p => p.category || 'General'));
+  return ['All', ...Array.from(s)];
+}
+
+function renderCategories(){
+  categoryListEl.innerHTML = '';
+  categoriesFromProducts().forEach(cat=>{
+    const b = document.createElement('button');
+    b.textContent = cat; b.onclick = ()=>{ currentFilter = cat; renderProducts(); };
+    categoryListEl.appendChild(b);
+  });
+}
+
+function renderProducts(){
+  const shown = allProducts.filter(p=>{
+    if (currentFilter !== 'All' && p.category !== currentFilter) return false;
+    if (currentSearch && ! (p.title||'').toLowerCase().includes(currentSearch.toLowerCase()) ) return false;
+    return true;
+  });
+  productGrid.innerHTML = '';
+  productCountEl.textContent = `${shown.length} items`;
+  shown.forEach(p=>{
+    const card = document.createElement('div'); card.className='card';
+    card.innerHTML = `
+      <img src="${p.imageUrl||placeholderSVG()}" alt="${escapeHtml(p.title)}" />
+      <h3>${escapeHtml(p.title)}</h3>
+      <div class="small">${escapeHtml(p.category||'')}</div>
+      <div class="price">${fmt(p.price)}</div>
+      <div class="actions">
+        <button class="btn" data-id="${p.id}" data-action="add">Add to Cart</button>
+        <button class="btn primary" data-id="${p.id}" data-action="buy">Buy Now</button>
+      </div>`;
+    productGrid.appendChild(card);
+  });
+}
+
+function placeholderSVG(){
+  return `data:image/svg+xml;utf8,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="600" height="400"><rect width="100%" height="100%" fill="#eee"/><text x="50%" y="50%" font-size="28" text-anchor="middle" fill="#888" dy=".3em">No Image</text></svg>')}`;
+}
+
+/**********************
+ * CART & CHECKOUT
+ **********************/
+const cartDrawer = el('cartDrawer');
+const cartBody = el('cartBody');
+const cartTotalEl = el('cartTotal');
+
+function renderCart(){
+  cartBody.innerHTML = '';
+  if (cart.length===0){ cartBody.innerHTML = '<div class="small">Cart is empty</div>'; cartTotalEl.textContent = fmt(0); return; }
+  let total = 0;
+  cart.forEach(ci=>{
+    total += (ci.price||0) * (ci.qty||1);
+    const node = document.createElement('div'); node.className='cart-item';
+    node.innerHTML = `
+      <img src="${ci.image||placeholderSVG()}" />
+      <div style="flex:1">
+        <div style="font-weight:700">${escapeHtml(ci.title)}</div>
+        <div class="small">${fmt(ci.price)}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:end;gap:6px">
+        <div style="display:flex;gap:6px;align-items:center">
+          <button class="btn ghost" data-action="dec" data-id="${ci.id}">-</button>
+          <div style="min-width:24px;text-align:center">${ci.qty}</div>
+          <button class="btn ghost" data-action="inc" data-id="${ci.id}">+</button>
         </div>
-      `;
-    });
+        <button class="btn" data-action="remove" data-id="${ci.id}">Remove</button>
+      </div>`;
+    cartBody.appendChild(node);
+  });
+  cartTotalEl.textContent = fmt(total);
+}
+
+function addToCartItem(p, qty=1){
+  const existing = cart.find(c=>c.id===p.id);
+  if (existing) existing.qty += qty; else cart.push({ id:p.id, title:p.title, price:p.price, image:p.imageUrl, qty });
+  saveCart();
+}
+
+function changeQty(id, delta){ const c = cart.find(x=>x.id===id); if(!c) return; c.qty += delta; if (c.qty<=0) cart = cart.filter(x=>x.id!==id); saveCart(); }
+function removeFromCart(id){ cart = cart.filter(c=>c.id!==id); saveCart(); }
+
+/**********************
+ * CHECKOUT + EmailJS + Firestore orders
+ **********************/
+const checkoutModal = el('checkoutModal');
+const checkoutForm = el('checkoutForm');
+const checkoutAmountEl = el('checkoutAmount');
+const checkoutSummary = el('checkoutSummary');
+const orderMsg = el('orderMsg');
+let checkoutItems = [];
+
+function openCheckoutModal(items){
+  checkoutItems = items;
+  const lines = items.map(ci=> `${escapeHtml(ci.title)} × ${ci.qty} (${fmt(ci.price*ci.qty)})`);
+  const total = items.reduce((s,it)=> s + it.price*it.qty, 0);
+  checkoutSummary.innerHTML = `<div class="small">Items:</div><div>${lines.join('<br/>')}</div>`;
+  checkoutAmountEl.textContent = fmt(total);
+  const prof = loadProfile();
+  if (prof){ el('custName').value = prof.name||''; el('custPhone').value = prof.phone||''; el('custAddress').value = prof.address||''; }
+  orderMsg.style.display = 'none'; orderMsg.style.color = 'green';
+  checkoutModal.style.display = 'flex';
+}
+
+function closeCheckout(){ checkoutModal.style.display = 'none'; }
+
+async function placeOrderToDB(order){
+  const ref = await db.collection('orders').add(order);
+  return ref.id;
+}
+
+async function sendOrderEmail(order){
+  const templateParams = {
+    to_email: ORDER_NOTIFICATION_EMAIL,
+    from_name: order.customerName,
+    phone: order.phone,
+    address: order.address,
+    order_id: order.orderId,
+    order_items: order.items.map(i=> `${i.title} × ${i.qty}`).join(', '),
+    amount: fmt(order.total)
+  };
+  return emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams);
+}
+
+checkoutForm.addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  const name = el('custName').value.trim();
+  const phone = el('custPhone').value.trim();
+  const address = el('custAddress').value.trim();
+  if (!name || !phone || !address) return alert('Fill all fields');
+
+  const orderId = 'ORD-' + uid().toUpperCase();
+  const total = checkoutItems.reduce((s,it)=> s + it.price*it.qty, 0);
+  const order = {
+    orderId,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+    customerName: name, phone, address,
+    items: checkoutItems.map(i=> ({ id:i.id, title:i.title, price:i.price, qty:i.qty })),
+    total,
+    status: 'new'
+  };
+
+  try{
+    await placeOrderToDB(order);
+    await sendOrderEmail(order);
+    orderMsg.style.display = 'block';
+    orderMsg.textContent = `Order ${orderId} placed — email sent to ${ORDER_NOTIFICATION_EMAIL}.`;
+    // Save a local copy for customer My Orders
+    saveCustomerOrderLocal(order);
+    // Clear full cart if checking out all cart items
+    if (checkoutItems.length === cart.length) { cart = []; saveCart(); }
+    checkoutForm.reset();
+  }catch(err){
+    console.error(err);
+    orderMsg.style.display = 'block';
+    orderMsg.style.color = 'red';
+    orderMsg.textContent = 'Order saved locally but email or DB failed. Please retry.';
   }
+});
 
-  function addToCart(index) {
-    cart.push(products[index]);
-    updateCartCount();
-  }
+/**********************
+ * CUSTOMER — My Orders (local history for this device)
+ **********************/
+const MY_ORDERS_KEY = 'dipam_my_orders_v1';
+function saveCustomerOrderLocal(order){
+  const list = JSON.parse(localStorage.getItem(MY_ORDERS_KEY)||'[]');
+  list.unshift({ ...order, createdAtLocal: new Date().toISOString() });
+  localStorage.setItem(MY_ORDERS_KEY, JSON.stringify(list));
+}
+function getCustomerOrdersLocal(){ return JSON.parse(localStorage.getItem(MY_ORDERS_KEY)||'[]'); }
 
-  function buyNow(index) {
-    cart = [products[index]];
-    openCart();
-  }
+// Simple modal to show local orders (reusing ordersModal from earlier version)
+const ordersModal = document.createElement('div');
+ordersModal.className = 'modal-back'; ordersModal.id = 'ordersModal';
+ordersModal.innerHTML = `<div class="modal"><div style="display:flex;justify-content:space-between;align-items:center"><h3>My Orders</h3><button id="closeOrders" class="btn ghost">Close</button></div><div id="ordersList" style="margin-top:10px"></div></div>`;
+document.body.appendChild(ordersModal);
 
-  function openCart() {
-    document.getElementById("cartModal").style.display = "block";
-    renderCart();
-  }
+function openOrders(){ ordersModal.style.display = 'flex'; renderOrdersLocal(); }
+function closeOrders(){ ordersModal.style.display = 'none'; }
 
-  function closeCart() {
-    document.getElementById("cartModal").style.display = "none";
-  }
+function renderOrdersLocal(){
+  const ordersList = el('ordersList');
+  const orders = getCustomerOrdersLocal();
+  if (orders.length===0){ ordersList.innerHTML = '<div class="small">No orders on this device.</div>'; return; }
+  ordersList.innerHTML = '';
+  orders.forEach(o=>{
+    const div = document.createElement('div');
+    div.style.cssText = 'border-bottom:1px solid #eee;padding:8px 0';
+    const items = o.items.map(i=> `${escapeHtml(i.title)} × ${i.qty} (${fmt(i.price*i.qty)})`).join('<br/>');
+    div.innerHTML = `<div><strong>${escapeHtml(o.customerName)}</strong> • <span class="pill">${o.orderId}</span></div><div class="small">${new Date(o.createdAtLocal||Date.now()).toLocaleString()}</div><div style="margin-top:6px">${items}</div><div style="margin-top:6px"><strong>Total:</strong> ${fmt(o.total)}</div>`;
+    ordersList.appendChild(div);
+  });
+}
 
-  function renderCart() {
-    const cartItems = document.getElementById("cartItems");
-    cartItems.innerHTML = "";
-    let total = 0;
-    cart.forEach(item => {
-      total += item.price;
-      cartItems.innerHTML += `<p>${item.name} - ₹${item.price}</p>`;
-    });
-    document.getElementById("totalPrice").innerText = total;
-  }
+/**********************
+ * PROFILE (local for faster checkout)
+ **********************/
+function saveProfile(p){ localStorage.setItem(PROFILE_KEY, JSON.stringify(p)); }
+function loadProfile(){ try{ return JSON.parse(localStorage.getItem(PROFILE_KEY)||'null'); }catch(e){ return null; } }
 
-  function updateCartCount() {
-    document.getElementById("cartCount").innerText = cart.length;
-  }
+/**********************
+ * OWNER AUTH (Firebase Auth Email/Password)
+ **********************/
+// Shows owner status
+function showOwnerStatus(user){
+  if (user && user.email === OWNER_EMAIL){ el('ownerStatus').innerHTML = `<span class="pill">Owner signed in: ${escapeHtml(user.email)}</span>`; el('ownerSignIn').style.display='none'; el('ownerSignOut').style.display='block'; }
+  else { el('ownerStatus').innerHTML = '<span class="small">Owner not signed in</span>'; el('ownerSignIn').style.display='block'; el('ownerSignOut').style.display='none'; }
+}
 
-  function checkout() {
-    const name = document.getElementById("custName").value;
-    const address = document.getElementById("custAddress").value;
-    const phone = document.getElementById("custPhone").value;
+auth.onAuthStateChanged(user=>{ showOwnerStatus(user); });
 
-    if (!name || !address || !phone) {
-      alert("Please fill all details!");
-      return;
-    }
+async function ownerSignInFlow(){
+  const email = OWNER_EMAIL;
+  const pwd = prompt('Enter owner password for ' + email + ':');
+  if (!pwd) return;
+  try{ await auth.signInWithEmailAndPassword(email, pwd); alert('Owner signed in'); }
+  catch(e){ if (e.code==='auth/user-not-found'){ alert('Owner account not found. Create it in Firebase Auth with email ' + email); } else alert('Sign in failed: '+e.message); }
+}
 
-    const orderDetails = cart.map(p => `${p.name} - ₹${p.price}`).join("\n");
-    const total = cart.reduce((sum, p) => sum + p.price, 0);
+async function ownerSignOutFlow(){ await auth.signOut(); alert('Signed out'); }
 
-    const templateParams = {
-      to_email: "dipamghosh85@gmail.com",
-      from_name: name,
-      address: address,
-      phone: phone,
-      order_list: orderDetails,
-      total_price: total
-    };
+/**********************
+ * UI HOOKUPS
+ **********************/
+// Header / search / home
+el('homeBtn').onclick = () => { currentSearch=''; el('searchInput').value=''; currentFilter='All'; renderProducts(); };
+el('homeTop').onclick = el('homeBtn').onclick;
+el('searchBtn').onclick = ()=>{ currentSearch = el('searchInput').value.trim(); renderProducts(); };
 
-    emailjs.send("service_c4p68ag", "template_214uijp", templateParams)
-      .then(() => {
-        saveOrder(name, orderDetails, total);
-        alert("Order placed! We will contact you soon.");
-        cart = [];
-        updateCartCount();
-        closeCart();
-      }, (err) => {
-        alert("Failed to send order. Please try again.");
-        console.error(err);
-      });
-  }
+// Settings menu
+const settingsBtn = el('settingsBtn');
+const settingsMenu = el('settingsMenu');
+settingsBtn.addEventListener('click', ()=> settingsMenu.classList.toggle('open'));
+document.addEventListener('click', (e)=>{ if (!settingsBtn.contains(e.target) && !settingsMenu.contains(e.target)) settingsMenu.classList.remove('open'); });
 
-  function saveOrder(name, details, total) {
-    let orders = JSON.parse(localStorage.getItem("myOrders")) || [];
-    orders.push({ customer: name, details, total, date: new Date().toLocaleString() });
-    localStorage.setItem("myOrders", JSON.stringify(orders));
-  }
+// Add Product modal open/close (owner only)
+el('openAddProduct').onclick = ()=>{
+  if (!auth.currentUser || auth.currentUser.email !== OWNER_EMAIL){ alert('Owner sign in required'); return; }
+  el('addProductModal').style.display = 'flex';
+};
+el('closeAddProduct').onclick = ()=> el('addProductModal').style.display = 'none';
 
-  function openOrders() {
-    document.getElementById("ordersModal").style.display = "block";
-    renderOrders();
-  }
+// Profile modal
+el('openProfile').onclick = ()=>{
+  const p = loadProfile(); if (p){ el('profName').value = p.name||''; el('profPhone').value = p.phone||''; el('profAddress').value = p.address||''; }
+  el('profileModal').style.display = 'flex';
+};
+el('closeProfile').onclick = ()=> el('profileModal').style.display = 'none';
 
-  function closeOrders() {
-    document.getElementById("ordersModal").style.display = "none";
-  }
+document.getElementById('profileForm').addEventListener('submit', (e)=>{
+  e.preventDefault();
+  saveProfile({ name: el('profName').value.trim(), phone: el('profPhone').value.trim(), address: el('profAddress').value.trim() });
+  alert('Profile saved on this device'); el('profileModal').style.display = 'none';
+});
 
-  function renderOrders() {
-    const ordersList = document.getElementById("ordersList");
-    let orders = JSON.parse(localStorage.getItem("myOrders")) || [];
-    if (orders.length === 0) {
-      ordersList.innerHTML = "<p>No orders found.</p>";
-      return;
-    }
-    ordersList.innerHTML = "";
-    orders.forEach(order => {
-      ordersList.innerHTML += `
-        <div style="border-bottom:1px solid #ccc; padding:8px 0;">
-          <p><strong>${order.customer}</strong> (${order.date})</p>
-          <pre>${order.details}</pre>
-          <p><strong>Total:</strong> ₹${order.total}</p>
-        </div>
-      `;
-    });
-  }
+// Owner sign in/out
+el('ownerSignIn').onclick = ownerSignInFlow;
+el('ownerSignOut').onclick = ownerSignOutFlow;
 
-  function searchProducts() {
-    const query = document.getElementById("searchInput").value.toLowerCase();
-    filteredProducts = products.filter(p => p.name.toLowerCase().includes(query));
-    renderProducts();
-  }
+// Product grid buttons
+productGrid.addEventListener('click', (e)=>{
+  const btn = e.target.closest('button'); if (!btn) return;
+  const id = btn.getAttribute('data-id'); const action = btn.getAttribute('data-action');
+  const p = allProducts.find(x=>x.id===id); if (!p) return;
+  if (action==='add') addToCartItem(p, 1);
+  if (action==='buy') { openCheckoutModal([{ id:p.id, title:p.title, price:p.price, qty:1 }]); }
+});
 
-  function goHome() {
-    document.getElementById("searchInput").value = "";
-    filteredProducts = [...products];
-    renderProducts();
-  }
+// Cart drawer controls
+el('toggleCart').onclick = ()=> cartDrawer.classList.toggle('open');
+el('closeCartBtn').onclick = ()=> cartDrawer.classList.remove('open');
+el('clearCartBtn').onclick = ()=>{ if (!confirm('Clear cart?')) return; cart = []; saveCart(); };
 
-  renderProducts();
+cartBody.addEventListener('click', (e)=>{
+  const btn = e.target.closest('button'); if (!btn) return;
+  const action = btn.getAttribute('data-action'); const id = btn.getAttribute('data-id');
+  if (action==='inc') changeQty(id, +1);
+  if (action==='dec') changeQty(id, -1);
+  if (action==='remove') removeFromCart(id);
+});
+
+// Checkout open/close
+el('checkoutBtn').onclick = ()=>{ if (cart.length===0) return alert('Cart empty'); openCheckoutModal(cart.map(c=>({ ...c }))); };
+el('closeCheckout').onclick = closeCheckout;
+
+// Add Product form submit
+el('addProductForm').addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  if (!auth.currentUser || auth.currentUser.email !== OWNER_EMAIL){ return alert('Owner sign in required'); }
+  const title = el('pTitle').value.trim();
+  const price = Number(el('pPrice').value);
+  const category = el('pCategory').value.trim() || 'General';
+  const url = el('pImageUrl').value.trim();
+  const file = el('pImageFile').files[0];
+  if (!title || !(price>=0)) return alert('Enter title and valid price');
+  let imageUrl = url;
+  try{
+    if (file){ imageUrl = await uploadImageToStorage(file); }
+    const id = await addProductToDB({ title, price, category, imageUrl });
+    alert('Product added');
+    el('addProductForm').reset(); el('addProductModal').style.display='none';
+    await reloadProducts();
+  }catch(err){ console.error(err); alert('Failed to add product. Check console.'); }
+});
+
+/**********************
+ * ESCAPE & PLACEHOLDER
+ **********************/
+function escapeHtml(str){ return String(str||'').replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+/**********************
+ * LOAD & START
+ **********************/
+async function reloadProducts(){ allProducts = await fetchProducts(); renderCategories(); renderProducts(); }
+(async function init(){
+  try{ await reloadProducts(); }catch(e){ console.warn('Failed to load products (maybe rules not set yet). Showing placeholders.'); allProducts = []; renderCategories(); renderProducts(); }
+  renderCart(); updateCartBadge();
+})();
+
+/**********************
+ * OPEN/CLOSE other modals clicking outside
+ **********************/
+['addProductModal','profileModal','checkoutModal','ordersModal'].forEach(id=>{
+  const m = el(id); if (!m) return; m.addEventListener('click', (e)=>{ if (e.target===m) m.style.display='none'; });
+});
+
+// Expose openOrders to header cart area (we created ordersModal dynamically above)
+window.openOrders = openOrders; window.closeOrders = closeOrders;
 </script>
+
+<!--
+============================================================
+FIREBASE SECURITY RULES (paste into Firestore Rules)
+============================================================
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isOwner() {
+      return request.auth != null && request.auth.token.email == 'dipamghosh85@gmail.com';
+    }
+
+    // PRODUCTS — public read, owner write
+    match /products/{id} {
+      allow read: if true;
+      allow create, update, delete: if isOwner();
+    }
+
+    // ORDERS — anyone can create (checkout), only owner can read/list or update status
+    match /orders/{id} {
+      allow create: if true;
+      allow read, list, update, delete: if isOwner();
+    }
+  }
+}
+
+============================================================
+FIREBASE STORAGE RULES (for product images)
+============================================================
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    function isOwner(){ return request.auth != null && request.auth.token.email == 'dipamghosh85@gmail.com'; }
+    match /product-images/{allPaths=**} {
+      allow read: if true;
+      allow write: if isOwner();
+    }
+  }
+}
+
+============================================================
+HOW TO DEPLOY
+============================================================
+1) Create a Firebase project → Enable Authentication (Email/Password), Firestore, and Storage.
+2) In Authentication → Users, create an owner user with email: dipamghosh85@gmail.com and a password (you set it). Keep it secret.
+3) Copy your Firebase config (SDK snippet) and replace in firebaseConfig above.
+4) Firestore Rules: paste the rules from this comment and Publish.
+5) Storage Rules: paste the storage rules and Publish.
+6) (Optional) Firebase Hosting: `npm i -g firebase-tools` → `firebase login` → `firebase init hosting` → put this HTML as `public/index.html` → `firebase deploy`.
+7) EmailJS is already set. Make sure your EmailJS template has variables: from_name, to_email, order_id, order_items, amount, phone, address.
+
+Now your products, orders, and images are saved online for your domain. Only you (owner) can add products or view all orders from Firestore.
+-->
 
 </body>
 </html>
