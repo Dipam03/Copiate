@@ -224,7 +224,7 @@ const firebaseConfig = {
   messagingSenderId: '108308848034',
   appId: '1:108308848034:web:a8b3fe5e8784a4771e66fb'
 };
-let OWNER_EMAIL = 'dipamghosh85@gmail.com';
+let OWNER_EMAIL = prompt ('Enter admin email');
 
 const appFB = firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
