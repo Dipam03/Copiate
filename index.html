@@ -299,20 +299,22 @@ function renderProducts(){
   productGrid.innerHTML = '';
   productCountEl.textContent = `${shown.length} items`;
   shown.forEach(p=>{
-    const card = document.createElement('div'); card.className='card';
+    const card = document.createElement('div'); card.className = 'card';
     card.innerHTML = `
-      <img src="${p.imageUrl||placeholderSVG()}" alt="${escapeHtml(p.title)}" />
+      <img src="${p.image}" alt="${escapeHtml(p.title)}" />
       <h3>${escapeHtml(p.title)}</h3>
-      <div class="small">${escapeHtml(p.category||'')}</div>
+      <div class="small">${escapeHtml(p.category || '')}</div>
       <div class="price">${fmt(p.price)}</div>
       <div class="actions">
         <button class="btn" data-id="${p.id}" data-action="add">Add to Cart</button>
         <button class="btn primary" data-id="${p.id}" data-action="buy">Buy Now</button>
-      </div>`;
+      </div>
+    `;
     productGrid.appendChild(card);
   });
+  renderCategories();
+  renderAdminProducts();
 }
-
 const cartDrawer = el('cartDrawer');
 const cartBody = el('cartBody');
 const cartTotalEl = el('cartTotal');
