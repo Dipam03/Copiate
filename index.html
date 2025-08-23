@@ -215,6 +215,7 @@ main{display:grid;grid-template-columns:250px 1fr;gap:16px;margin-top:14px}
 const ORDER_NOTIFICATION_EMAIL = 'dipamghosh220@gmail.com';
 const EMAILJS_SERVICE_ID = 'service_c4p68ag';
 const EMAILJS_TEMPLATE_ID = 'template_214uijp';
+const EMAILJS_PUBLIC_KEY = 'E8cAV9p-pSYDnM8kE';
 
 const firebaseConfig = {
   apiKey: 'AIzaSyC5MGkOf5_0cF-xQrcA1PBSSvq6Y-AarSc',
@@ -246,6 +247,7 @@ const sha256 = async (message) => {
   const hashArray = Array.from(new Uint8Array(hashBuffer));
   return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 };
+function saveProducts(){ localStorage.setItem(PRODUCTS_KEY, JSON.stringify(products)); }
 function escapeHtml(str){ return String(str||'').replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 function saveCart(){ localStorage.setItem(CART_KEY, JSON.stringify(cart)); renderCart(); updateCartBadge(); }
 function updateCartBadge(){ el('cartCount').textContent = cart.reduce((s,c)=>s + (c.qty||0), 0); }
