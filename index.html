@@ -373,6 +373,69 @@ function addToCartItem(p, qty=1){
 function changeQty(id, delta){ const c = cart.find(x=>x.id===id); if(!c) return; c.qty += delta; if (c.qty<=0) cart = cart.filter(x=>x.id!==id); saveCart(); }
 function removeFromCart(id){ cart = cart.filter(c=>c.id!==id); saveCart(); }
 
+  /* =========================
+   Product add/edit (admin)
+   ========================= */
+const productForm = document.getElementById('productForm');
+const prodTitle = document.getElementById('prodTitle');
+const prodPrice = document.getElementById('prodPrice');
+const prodCategory = document.getElementById('prodCategory');
+const prodImage = document.getElementById('prodImage');
+const importSampleBtn = document.getElementById('importSampleBtn');
+
+productForm.addEventListener('submit', e=>{
+  e.preventDefault();
+  const title = prodTitle.value.trim();
+  const price = Number(prodPrice.value);
+  const category = prodCategory.value.trim() || 'General';
+  const file = prodImage.files[0];
+  if (!title || !price) return alert('Enter title and price');
+  if (file){
+    const reader = new FileReader();
+    reader.onload = ()=>{
+      products.push({ id: uid(), title, price, category, image: reader.result });
+      saveProducts(); renderProducts();
+      productForm.reset();
+      alert('Product added');
+    };
+    reader.readAsDataURL(file);
+  } else {
+    // add placeholder image
+    const svg = `data:image/svg+xml;utf8,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300"><rect width="100%" height="100%" fill="%23ddd"/><text x="50%" y="50%" font-size="24" text-anchor="middle" fill="%23888" dy=".3em">No Image</text></svg>')}`;
+    products.push({ id: uid(), title, price, category, image: svg });
+    saveProducts(); renderProducts();
+    productForm.reset(); alert('Product added without an image');
+  }
+});
+
+importSampleBtn.addEventListener('click', ()=>{
+  const svg = `data:image/svg+xml;utf8,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="600" height="400"><rect width="100%" height="100%" fill="%23eee"/><text x="50%" y="50%" font-size="28" text-anchor="middle" fill="%23888" dy=".3em">Sample Product</text></svg>')}`;
+  products.push({ id: uid(), title: 'Sample Product', price: +(Math.random()*1000+100).toFixed(2), category: 'General', image: svg });
+  saveProducts(); renderProducts();
+});
+
+/* Admin product list actions (edit/delete) */
+adminProductList.addEventListener('click', (e)=>{
+  const btn = e.target.closest('button');
+  if (!btn) return;
+  const idx = Number(btn.getAttribute('data-idx'));
+  const action = btn.getAttribute('data-action');
+  if (action === 'del'){
+    if (!confirm('Delete product?')) return;
+    products.splice(idx,1); saveProducts(); renderProducts();
+  } else if (action === 'edit'){
+    // prefill the form with product data for editing
+    const p = products[idx];
+    if (!p) return;
+    prodTitle.value = p.title;
+    prodPrice.value = p.price;
+    prodCategory.value = p.category;
+    // remove the product being edited (we will re-add on submit)
+    products.splice(idx,1); saveProducts(); renderProducts();
+    alert('Edit the fields and click "Add product" to save changes (image cannot be prefilled; re-upload if needed).');
+  }
+});
+  
 // Customer auth (Firestore mobile+password)
 const USERS_COL = 'users';
 function currentUser(){ try{return JSON.parse(localStorage.getItem(PROFILE_KEY)||'null');}catch(e){return null;} }
