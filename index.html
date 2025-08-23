@@ -276,7 +276,7 @@ const categoryListEl = el('categoryList');
 let allProducts = [];
 
 function categoriesFromProducts(){
-  const s = new Set(allProducts.map(p => p.category || 'General'));
+  const s = new Set(products.map(p => p.category || 'General'));
   return ['All', ...Array.from(s)];
 }
 function renderCategories(){
