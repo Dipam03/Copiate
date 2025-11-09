@@ -3497,7 +3497,7 @@
       const product = products.find(p => p.id === productId);
       if (!product) return;
       // File mode: no real URL → so we generate a fake product link
-      const link = `https://crodyto.com/product/${productId}`;
+      const link = `https://dipam03.github.io/Copiate/product/${productId}`;
       try {
         await navigator.clipboard.writeText(link);
         showAndroidAlert("✅ Product link copied!", "success");
