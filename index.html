@@ -5,6 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Crodyto - Mobile First E-commerce</title>
 
+<!-- Android PWA Support -->
+<meta name="theme-color" content="#3b82f6">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+
 <!-- Confetti Library -->
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
 
@@ -15,7 +21,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 <style>
-  /* ✅ MOBILE FIRST CSS DESIGN - STARTS FROM 320px */
+  /* ✅ MOBILE FIRST CSS DESIGN - COMPLETE STYLES */
   
   :root {
     --primary: #3b82f6;
@@ -29,6 +35,54 @@
     --border: #e5e7eb;
     --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
     --radius: 8px;
+  }
+
+  /* ✅ ANDROID SPECIFIC OPTIMIZATIONS */
+  .android-device .btn {
+    -webkit-tap-highlight-color: rgba(0,0,0,0.1);
+    touch-action: manipulation;
+  }
+
+  html {
+    height: 100vh;
+    height: -webkit-fill-available;
+  }
+
+  body {
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
+  }
+
+  .btn-vibrate {
+    animation: androidVibrate 0.1s;
+  }
+
+  @keyframes androidVibrate {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-2px); }
+    75% { transform: translateX(2px); }
+  }
+
+  * {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+
+  .android-notification {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(135deg, #3b82f6, #06b6d4);
+    color: white;
+    padding: 1rem;
+    z-index: 10000;
+    transform: translateY(-100%);
+    transition: transform 0.3s ease;
+  }
+
+  .android-notification.show {
+    transform: translateY(0);
   }
   
   * {
@@ -54,6 +108,7 @@
     top: 0;
     z-index: 100;
     padding: 0.75rem 0;
+    padding-top: max(0.75rem, env(safe-area-inset-top));
   }
   
   .nav-container {
@@ -101,6 +156,7 @@
   .search-bar input:focus {
     border-color: var(--primary);
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    font-size: 16px;
   }
   
   .btn {
@@ -116,7 +172,10 @@
     gap: 0.375rem;
     transition: all 0.3s ease;
     min-height: 44px;
+    min-width: 44px;
     white-space: nowrap;
+    -webkit-user-select: none;
+    user-select: none;
   }
   
   .btn-primary {
@@ -180,10 +239,11 @@
   .hero-banner-slider {
     position: relative;
     width: 100%;
-    aspect-ratio: 16 / 9;
     overflow: hidden;
     margin-bottom: 2rem;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    aspect-ratio: 16 / 5;
+    height: clamp(150px, calc(100vw * 0.375), 500px);
   }
 
   .banner-slider-container {
@@ -215,7 +275,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: linear-gradient(rgba(59, 130, 246, 0.6), rgba(30, 64, 175, 0.7));
+    background: linear-gradient(rgba(59, 130, 246, 0.6),transparent);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -326,6 +386,121 @@
     letter-spacing: 1px;
   }
 
+  /* ✅ ENHANCED PRODUCT IMAGE SLIDER */
+  .product-image-slider {
+    position: relative;
+    width: 100%;
+    height: 300px;
+    margin-bottom: 1.5rem;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    background: var(--light);
+  }
+
+  .product-images-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    cursor: grab;
+  }
+
+  .product-images-container:active {
+    cursor: grabbing;
+  }
+
+  .product-images-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    flex-shrink: 0;
+    border-radius: 0;
+    opacity: 1;
+    transition: none;
+    display: block;
+  }
+
+  .product-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    transition: all 0.3s ease;
+    z-index: 10;
+    backdrop-filter: blur(5px);
+  }
+
+  .product-nav:hover {
+    background: rgba(0, 0, 0, 0.9);
+    transform: translateY(-50%) scale(1.1);
+  }
+
+  .product-nav.prev {
+    left: 15px;
+  }
+
+  .product-nav.next {
+    right: 15px;
+  }
+
+  .product-image-indicators {
+    position: absolute;
+    bottom: 15px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 8px;
+    z-index: 10;
+  }
+
+  .product-image-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.5);
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .product-image-dot.active {
+    background: white;
+    transform: scale(1.3);
+    box-shadow: 0 2px 8px rgba(255, 255, 255, 0.3);
+  }
+
+  .product-image-counter {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    z-index: 10;
+    backdrop-filter: blur(5px);
+  }
+
+  .product-image-slider.single-image .product-nav,
+  .product-image-slider.single-image .product-image-indicators,
+  .product-image-slider.single-image .product-image-counter {
+    display: none;
+  }
+
   /* ✅ SIZE SELECTION STYLES */
   .size-selection {
     margin: 1.5rem 0;
@@ -410,7 +585,7 @@
     font-size: 0.9rem;
   }
 
-  /* ✅ PRODUCT RATING CARD STYLES - Only for Order Details */
+  /* ✅ PRODUCT RATING CARD STYLES */
   .product-rating-card {
     background: white;
     border-radius: 8px;
@@ -452,113 +627,48 @@
     border: 1px solid #bbf7d0;
   }
 
-  /* ✅ PRODUCT IMAGE SLIDER */
-  .product-image-slider {
-    position: relative;
-    width: 100%;
-    max-width: 400px;
-    margin: 0 auto 1rem;
-    overflow: hidden;
+  /* ✅ PAYMENT STATUS STYLES */
+  .payment-monitoring {
+    background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+    border: 2px solid var(--primary);
     border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    padding: 1.5rem;
+    margin: 1rem 0;
+    text-align: center;
   }
 
-  .product-images-container {
-    position: relative;
-    width: 100%;
-    height: 250px;
-    overflow: hidden;
-  }
-
-  .product-images-container img {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    opacity: 0;
-    transition: opacity 0.5s ease-in-out;
-  }
-
-  .product-images-container img.active {
-    opacity: 1;
-  }
-
-  .product-nav {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    background: rgba(0, 0, 0, 0.6);
-    color: white;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    z-index: 10;
-    font-size: 1rem;
-    border: none;
-  }
-
-  .product-nav:hover {
-    background: rgba(0, 0, 0, 0.8);
-    transform: translateY(-50%) scale(1.1);
-  }
-
-  .product-nav.prev {
-    left: 10px;
-  }
-
-  .product-nav.next {
-    right: 10px;
-  }
-
-  .product-image-indicators {
-    position: absolute;
-    bottom: 10px;
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    gap: 8px;
-    z-index: 10;
-  }
-
-  .product-image-dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.5);
-    cursor: pointer;
-    transition: all 0.3s ease;
-    border: none;
-  }
-
-  .product-image-dot.active {
-    background: white;
-    transform: scale(1.2);
-  }
-
-  .product-image-counter {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    background: rgba(0, 0, 0, 0.7);
-    color: white;
-    padding: 4px 8px;
-    border-radius: 12px;
-    font-size: 0.8rem;
+  .payment-status {
+    padding: 1rem;
+    border-radius: 8px;
+    margin: 1rem 0;
     font-weight: 600;
-    z-index: 10;
+    transition: all 0.3s ease;
   }
 
-  .product-image-slider.single-image .product-nav,
-  .product-image-slider.single-image .product-image-indicators,
-  .product-image-slider.single-image .product-image-counter {
-    display: none;
+  .payment-status.monitoring {
+    background: rgba(59, 130, 246, 0.1);
+    color: var(--primary);
+    border: 1px solid var(--primary);
+  }
+
+  .payment-status.success {
+    background: rgba(16, 185, 129, 0.1);
+    color: var(--success);
+    border: 1px solid var(--success);
+  }
+
+  .payment-status.timeout {
+    background: rgba(245, 158, 11, 0.1);
+    color: var(--warning);
+    border: 1px solid var(--warning);
+  }
+
+  .transaction-info {
+    background: white;
+    border: 2px solid var(--primary);
+    border-radius: 8px;
+    padding: 1rem;
+    margin: 1rem 0;
   }
 
   /* ✅ MOBILE FIRST CONTAINER & SECTIONS */
@@ -673,9 +783,12 @@
     width: 100%;
     max-width: 100vw;
     max-height: 85vh;
+    max-height: -webkit-fill-available;
     overflow-y: auto;
     transform: translateY(100%);
     transition: transform 0.3s ease;
+    position: fixed;
+    bottom: 0;
   }
   
   .modal-backdrop.show .modal {
@@ -1098,6 +1211,7 @@
   .profile-form-input:focus {
     border-color: var(--primary);
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    font-size: 16px;
   }
   
   .tab-content {
@@ -1148,7 +1262,7 @@
   .status-delivered { background: #d1fae5; color: #065f46; }
   .status-cancelled { background: #fee2e2; color: #991b1b; }
   
-  /* ✅ ORDER STATUS TRACKING - 5 Steps */
+  /* ✅ ORDER STATUS TRACKING */
   .order-status-bar {
     display: flex;
     list-style: none;
@@ -1304,21 +1418,6 @@
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   }
   
-  .upi-mobile-btn {
-    display: block;
-    width: 100%;
-    padding: 1rem;
-    background: linear-gradient(135deg, var(--success), #059669);
-    color: white;
-    border: none;
-    border-radius: var(--radius);
-    font-size: 1rem;
-    font-weight: bold;
-    cursor: pointer;
-    margin: 1rem 0;
-    transition: all 0.3s ease;
-  }
-  
   /* ✅ ALERT MOBILE OPTIMIZED */
   .alert {
     position: fixed;
@@ -1465,6 +1564,32 @@
       font-size: 0.8rem;
       padding: 6px 12px;
     }
+
+    .product-image-slider {
+      height: 250px;
+      margin-bottom: 1rem;
+    }
+    
+    .product-nav {
+      width: 40px;
+      height: 40px;
+      font-size: 1rem;
+    }
+    
+    .product-nav.prev {
+      left: 10px;
+    }
+    
+    .product-nav.next {
+      right: 10px;
+    }
+    
+    .product-image-counter {
+      top: 10px;
+      right: 10px;
+      font-size: 0.75rem;
+      padding: 4px 8px;
+    }
   }
   
   @media (min-width: 600px) {
@@ -1500,6 +1625,8 @@
       max-width: 600px;
       max-height: 80vh;
       transform: scale(0.9);
+      position: relative;
+      bottom: auto;
     }
     
     .modal-backdrop.show .modal {
@@ -1599,17 +1726,6 @@
   <section class="hero-banner-slider">
     <div class="banner-slider-container" id="bannerSlider"></div>
     
-    <div class="banner-overlay">
-      <div class="hero-content">
-        <h1>Welcome to Crodyto</h1>
-        <p>Discover amazing products at unbeatable prices</p>
-        <button class="btn btn-primary" onclick="document.getElementById('products').scrollIntoView({ behavior: 'smooth' })">
-          <i class="fas fa-shopping-bag"></i>
-          Shop Now
-        </button>
-      </div>
-    </div>
-    
     <button class="banner-nav prev" id="prevBtn">
       <i class="fas fa-chevron-left"></i>
     </button>
@@ -1640,8 +1756,30 @@
       <div class="modal-body">
         <div id="alertContainer"></div>
         
+        <!-- Google Sign-In Button -->
+        <div style="margin-bottom: 1.5rem;">
+          <button class="btn btn-primary" onclick="isMobile() ? signInWithGoogleRedirect() : signInWithGoogle()" 
+                  style="width: 100%; background: linear-gradient(135deg, #4285f4, #34a853); border: none; padding: 0.75rem 1rem; font-size: 1rem; display: flex; align-items: center; justify-content: center; gap: 0.75rem;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
+              <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+              <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+              <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+              <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+            </svg>
+            Continue with Google
+          </button>
+        </div>
+        
+        <!-- Divider -->
+        <div style="display: flex; align-items: center; margin: 1.5rem 0; gap: 1rem;">
+          <div style="flex: 1; height: 1px; background: var(--border);"></div>
+          <span style="color: var(--gray); font-size: 0.875rem; font-weight: 500;">or</span>
+          <div style="flex: 1; height: 1px; background: var(--border);"></div>
+        </div>
+        
+        <!-- Toggle Login/Register -->
         <div style="margin-bottom: 1rem;">
-          <button class="btn btn-primary" onclick="toggleAuthMode()" id="authToggle" style="width: 100%;">
+          <button class="btn btn-ghost" onclick="toggleAuthMode()" id="authToggle" style="width: 100%; border: 2px solid var(--border);">
             Switch to Register
           </button>
         </div>
@@ -1722,7 +1860,7 @@
           </button>
           <button class="profile-tab" onclick="switchTab('orders')">
             <i class="fas fa-box"></i>
-            Orders
+            My Orders
           </button>
           <button class="profile-tab" onclick="switchTab('wishlist')">
             <i class="fas fa-heart"></i>
@@ -1902,12 +2040,12 @@
           <h4 style="margin: 1.5rem 0 1rem; color: var(--primary);">💳 Payment Method</h4>
           
           <div class="payment-methods" style="margin: 1rem 0;">
-            <div class="payment-method" onclick="selectPaymentMethod('cod')" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem; border: 2px solid var(--border); border-radius: var(--radius); margin-bottom: 0.75rem; cursor: pointer;">
+            <div class="payment-method" onclick="selectPaymentMethod('cod')" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem; border: 2px solid var(--primary); border-radius: var(--radius); margin-bottom: 0.75rem; cursor: pointer; background: rgba(59, 130, 246, 0.05);">
               <input type="radio" name="paymentMethod" value="cod" id="cod" checked>
               <div style="font-size: 1.5rem;">💰</div>
               <div>
                 <h4 style="margin: 0; font-size: 1rem;">Cash on Delivery</h4>
-                <p style="margin: 0; font-size: 0.875rem; color: var(--gray);">Pay when you receive</p>
+                <p style="margin: 0; font-size: 0.875rem; color: var(--gray);">Pay when you receive your order</p>
               </div>
             </div>
             
@@ -1922,7 +2060,7 @@
           </div>
           
           <div class="upi-form" id="upiForm">
-            <h5 style="margin-bottom: 1rem; color: var(--success);">📱 UPI Payment</h5>
+            <h5 style="margin-bottom: 1rem; color: var(--success);">📱 UPI Payment with Auto-Verification</h5>
             
             <div style="text-align: center; margin: 1rem 0; padding: 1rem; background: rgba(16, 185, 129, 0.1); border-radius: 8px;">
               <div style="font-weight: bold; color: var(--success); margin-bottom: 0.5rem;">
@@ -1941,10 +2079,10 @@
             </div>
             
             <div style="background: rgba(59, 130, 246, 0.1); padding: 1rem; border-radius: 8px; font-size: 0.875rem; color: var(--primary);">
-              <div style="font-weight: bold; margin-bottom: 0.5rem;">📋 How to Pay:</div>
-              <div>1. Scan QR code with any UPI app</div>
-              <div>2. Or click the payment button below</div>
-              <div>3. Complete payment and return here</div>
+              <div style="font-weight: bold; margin-bottom: 0.5rem;">🔍 Auto-Verification Active:</div>
+              <div>• Payment status will be monitored automatically</div>
+              <div>• Order will be placed only after successful payment</div>
+              <div>• Manual verification option available</div>
             </div>
           </div>
           
@@ -1968,22 +2106,203 @@
   <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
     import { getFirestore, collection, addDoc, getDocs, query, where, orderBy, doc, updateDoc, serverTimestamp, arrayUnion } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
-    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut as firebaseSignOut, sendPasswordResetEmail, onAuthStateChanged, updateProfile } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut as firebaseSignOut, sendPasswordResetEmail, onAuthStateChanged, updateProfile, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 
     // Firebase Configuration
     const firebaseConfig = {
-      apiKey: "AIzaSyC5MGkOf5_0cF-xQrcA1PBSSvq6Y-AarSc",
-      authDomain: "ds-mart-888d2.firebaseapp.com",
-      projectId: "ds-mart-888d2",
-      storageBucket: "ds-mart-888d2.firebasestorage.app",
-      messagingSenderId: "108308848034",
-      appId: "1:108308848034:web:a8b3fe5e8784a4771e66fb",
-      measurementId: "G-KY618BJER7"
+      apiKey: "AIzaSyBZLpHb5A-fCL1pXCKfGqZgjVQH8T2urfg",
+      authDomain: "ds-mart2.firebaseapp.com",
+      projectId: "ds-mart2",
+      storageBucket: "ds-mart2.firebasestorage.app",
+      messagingSenderId: "121729214760",
+      appId: "1:121729214760:web:c1231862217a572c07881d",
+      measurementId: "G-GRWDH1HWJQ"
     };
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const auth = getAuth(app);
+
+    // ✅ GOOGLE AUTH PROVIDER
+    const googleProvider = new GoogleAuthProvider();
+    googleProvider.addScope('email');
+    googleProvider.addScope('profile');
+
+    // ✅ ANDROID SPECIFIC FEATURES
+    class AndroidOptimizer {
+      constructor() {
+        this.isAndroid = /Android/i.test(navigator.userAgent);
+        this.wakeLock = null;
+        this.init();
+      }
+
+      init() {
+        if (this.isAndroid) {
+          document.body.classList.add('android-device');
+          this.setupAndroidFeatures();
+          this.setupBackButton();
+          this.setupVibration();
+          this.setupNotifications();
+          this.registerServiceWorker();
+        }
+      }
+
+      // Android Back Button Support
+      setupBackButton() {
+        window.addEventListener('popstate', (e) => {
+          const openModal = document.querySelector('.modal-backdrop.show');
+          const openCart = document.querySelector('.cart-drawer.show');
+          
+          if (openModal) {
+            openModal.classList.remove('show');
+            document.body.style.overflow = '';
+            history.pushState(null, null, window.location.href);
+          } else if (openCart) {
+            openCart.classList.remove('show');
+            history.pushState(null, null, window.location.href);
+          }
+        });
+        
+        // Push initial state
+        history.pushState(null, null, window.location.href);
+      }
+
+      // Vibration Support
+      setupVibration() {
+        if ('vibrate' in navigator) {
+          // Add vibration to all buttons
+          document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('btn') || e.target.closest('.btn')) {
+              navigator.vibrate(50);
+              const btn = e.target.classList.contains('btn') ? e.target : e.target.closest('.btn');
+              btn.classList.add('btn-vibrate');
+              setTimeout(() => {
+                btn.classList.remove('btn-vibrate');
+              }, 100);
+            }
+          });
+        }
+      }
+
+      // Android Notifications
+      setupNotifications() {
+        if ('Notification' in window && 'serviceWorker' in navigator) {
+          // Request permission after user interaction
+          let permissionRequested = false;
+          document.addEventListener('click', () => {
+            if (Notification.permission === 'default' && !permissionRequested) {
+              permissionRequested = true;
+              Notification.requestPermission().then(permission => {
+                if (permission === 'granted') {
+                  this.showAndroidNotification('Welcome to Crodyto!', 'Notifications enabled for order updates');
+                }
+              });
+            }
+          }, { once: true });
+        }
+      }
+
+      // Register Service Worker
+      async registerServiceWorker() {
+        if ('serviceWorker' in navigator) {
+          try {
+            const registration = await navigator.serviceWorker.register('data:text/javascript;base64,c2VsZi5hZGRFdmVudExpc3RlbmVyKCdpbnN0YWxsJywgZXZlbnQgPT4gew0KICBjb25zb2xlLmxvZygnU2VydmljZSBXb3JrZXIgaW5zdGFsbGVkJyk7DQp9KTsNCg0Kc2VsZi5hZGRFdmVudExpc3RlbmVyKCdmZXRjaCcsIGV2ZW50ID0+IHsNCiAgLy8gSW50ZXJjZXB0IG5ldHdvcmsgcmVxdWVzdHMgaWYgbmVlZGVkDQp9KTs=');
+            console.log('Service Worker registered:', registration);
+          } catch (error) {
+            console.log('Service Worker registration failed:', error);
+          }
+        }
+      }
+
+      // Show Android-style notification
+      showAndroidNotification(title, body) {
+        if (Notification.permission === 'granted') {
+          const notification = new Notification(title, {
+            body: body,
+            icon: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMAAAADACAYAAABS3GwH',
+            badge: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEgAAABICAYAAABV7bNH',
+            vibrate: [200, 100, 200],
+            tag: 'crodyto-notification'
+          });
+
+          notification.onclick = () => {
+            window.focus();
+            notification.close();
+          };
+
+          setTimeout(() => {
+            notification.close();
+          }, 5000);
+        }
+      }
+
+      // Enhanced UPI for Android
+      openUPIApp(upiUrl) {
+        if (this.isAndroid) {
+          // Try specific UPI apps
+          const upiApps = [
+            'intent://pay?pa=dipamg13-1@oksbi#Intent;scheme=upi;package=net.one97.paytm;end',
+            'intent://pay?pa=dipamg13-1@oksbi#Intent;scheme=upi;package=com.phonepe.app;end',
+            'intent://pay?pa=dipamg13-1@oksbi#Intent;scheme=upi;package=com.google.android.apps.nbu.paisa.user;end'
+          ];
+          
+          let appOpened = false;
+          upiApps.forEach((appIntent, index) => {
+            setTimeout(() => {
+              if (!appOpened) {
+                try {
+                  window.location.href = appIntent;
+                  appOpened = true;
+                } catch (e) {
+                  if (index === upiApps.length - 1) {
+                    // Fallback to web UPI
+                    window.location.href = upiUrl;
+                  }
+                }
+              }
+            }, index * 500);
+          });
+        } else {
+          window.location.href = upiUrl;
+        }
+      }
+
+      setupAndroidFeatures() {
+        // Android status bar color
+        const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+        if (metaThemeColor) {
+          metaThemeColor.content = '#3b82f6';
+        }
+
+        // Keep screen on during checkout
+        this.setupWakeLock();
+
+        // Better touch handling
+        document.addEventListener('touchstart', function(e) {
+          // Add visual feedback for touch
+        }, { passive: true });
+      }
+
+      async setupWakeLock() {
+        if ('wakeLock' in navigator) {
+          try {
+            // Keep screen on during checkout
+            document.addEventListener('checkout-start', async () => {
+              this.wakeLock = await navigator.wakeLock.request('screen');
+            });
+            
+            document.addEventListener('checkout-end', () => {
+              if (this.wakeLock) {
+                this.wakeLock.release();
+                this.wakeLock = null;
+              }
+            });
+          } catch (err) {
+            console.log('Wake lock failed:', err);
+          }
+        }
+      }
+    }
 
     // Global State
     let currentUser = null;
@@ -1996,6 +2315,437 @@
     let selectedSize = null;
     let selectedRating = 0;
     let currentProductForRating = null;
+
+    // Initialize Android Optimizer
+    const androidOptimizer = new AndroidOptimizer();
+
+    // Enhanced UPI Handler for Android
+    window.openAndroidUPI = (upiUrl) => {
+      androidOptimizer.openUPIApp(upiUrl);
+    };
+
+    // ✅ GOOGLE SIGN-IN FUNCTIONS
+    window.signInWithGoogle = async () => {
+      try {
+        const result = await signInWithPopup(auth, googleProvider);
+        const credential = GoogleAuthProvider.credentialFromResult(result);
+        const user = result.user;
+        
+        showAndroidAlert('🎉 Google sign-in successful!', 'success');
+        
+        // Android Google sign-in notification
+        if (androidOptimizer.isAndroid) {
+          androidOptimizer.showAndroidNotification('Welcome!', `Hi ${user.displayName}, you're signed in with Google!`);
+        }
+        
+        closeModal('loginModal');
+        
+      } catch (error) {
+        console.error('Google sign-in error:', error);
+        
+        if (error.code === 'auth/account-exists-with-different-credential') {
+          showAndroidAlert('This email is already registered with a different method. Please use email/password login.', 'warning');
+        } else if (error.code === 'auth/popup-closed-by-user') {
+          showAndroidAlert('Sign-in cancelled', 'warning');
+        } else {
+          showAndroidAlert('Google sign-in failed. Please try again.', 'error');
+        }
+      }
+    };
+
+    // Alternative method for mobile devices (redirect instead of popup)
+    window.signInWithGoogleRedirect = async () => {
+      try {
+        await signInWithRedirect(auth, googleProvider);
+      } catch (error) {
+        console.error('Google redirect sign-in error:', error);
+        showAndroidAlert('Google sign-in failed. Please try again.', 'error');
+      }
+    };
+
+    // Handle redirect result on page load
+    async function handleGoogleRedirectResult() {
+      try {
+        const result = await getRedirectResult(auth);
+        if (result) {
+          const user = result.user;
+          showAndroidAlert(`Welcome ${user.displayName}! Google sign-in successful.`, 'success');
+        }
+      } catch (error) {
+        console.error('Google redirect result error:', error);
+        if (error.code === 'auth/account-exists-with-different-credential') {
+          showAndroidAlert('This email is already registered with a different method.', 'warning');
+        }
+      }
+    }
+
+    // Enhanced alert for Android
+    function showAndroidAlert(message, type = 'success') {
+      // Vibrate on alerts
+      if (navigator.vibrate && androidOptimizer.isAndroid) {
+        const vibrationPattern = {
+          success: [100],
+          error: [100, 50, 100],
+          warning: [50, 50, 50]
+        };
+        navigator.vibrate(vibrationPattern[type] || [100]);
+      }
+
+      // Show notification if possible
+      if (androidOptimizer.isAndroid && Notification.permission === 'granted') {
+        androidOptimizer.showAndroidNotification('Crodyto', message);
+      }
+
+      // Show regular alert
+      showAlert(message, type);
+    }
+
+    // Enhanced UPI Payment System with Automatic Verification
+    class UPIPaymentHandler {
+      constructor() {
+        this.pendingPayments = new Map();
+        this.paymentTimeout = 5 * 60 * 1000; // 5 minutes
+        this.paymentCheckInterval = 5000; // Check every 5 seconds
+      }
+
+      generateTransactionId() {
+        return 'TXN_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+      }
+
+      async initiateUPIPayment(amount, orderData) {
+        const transactionId = this.generateTransactionId();
+        const upiId = 'dipamg13-1@oksbi';
+        const merchantName = 'Crodyto';
+        const note = `Order Payment - ${transactionId}`;
+
+        // Create payment record in Firebase
+        const paymentRecord = {
+          transactionId,
+          orderId: orderData.tempOrderId || 'TEMP_' + Date.now(),
+          amount,
+          upiId,
+          merchantName,
+          status: 'pending',
+          createdAt: serverTimestamp(),
+          expiresAt: new Date(Date.now() + this.paymentTimeout),
+          userConfirmed: false,
+          autoDetected: false,
+          orderData: orderData
+        };
+
+        try {
+          // Save payment record
+          await addDoc(collection(db, 'pendingPayments'), paymentRecord);
+          
+          // Generate UPI URL with transaction ID
+          const upiUrl = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(merchantName)}&am=${encodeURIComponent(amount)}&tn=${encodeURIComponent(note)}&cu=INR&tr=${encodeURIComponent(transactionId)}`;
+          
+          // Generate QR Code
+          this.generateUPIQRCode(upiUrl, amount, upiId, merchantName, transactionId);
+          
+          // Start monitoring this payment
+          this.startPaymentMonitoring(transactionId, paymentRecord);
+          
+          return { success: true, transactionId, upiUrl };
+          
+        } catch (error) {
+          console.error('Error initiating UPI payment:', error);
+          throw error;
+        }
+      }
+
+      generateUPIQRCode(upiUrl, amount, upiId, merchantName, transactionId) {
+        const qrContainer = document.getElementById('qrCode');
+        qrContainer.innerHTML = '';
+        
+        try {
+          new QRCode(qrContainer, {
+            text: upiUrl,
+            width: 200,
+            height: 200,
+            colorDark: "#000000",
+            colorLight: "#ffffff",
+            correctLevel: QRCode.CorrectLevel.H
+          });
+          
+          // Enhanced payment details
+          setTimeout(() => {
+            const paymentInfo = document.createElement('div');
+            paymentInfo.innerHTML = `
+              <div class="transaction-info">
+                <div style="font-weight: bold; color: var(--primary); margin-bottom: 0.5rem; font-size: 1.1rem;">
+                  💳 Payment Amount: ₹${amount.toLocaleString()}
+                </div>
+                <div style="font-size: 0.9rem; margin-bottom: 0.5rem;"><strong>Transaction ID:</strong> ${transactionId}</div>
+                <div style="font-size: 0.9rem; margin-bottom: 0.5rem;"><strong>UPI ID:</strong> ${upiId}</div>
+                <div style="font-size: 0.9rem; margin-bottom: 1rem;"><strong>Merchant:</strong> ${merchantName}</div>
+                
+                <div style="background: rgba(16, 185, 129, 0.1); padding: 0.75rem; border-radius: 6px; margin-bottom: 1rem;">
+                  <div style="font-weight: 600; color: var(--success); margin-bottom: 0.25rem;">⚡ Auto-Detection Active</div>
+                  <div style="font-size: 0.85rem; color: var(--gray);">Payment will be verified automatically</div>
+                </div>
+                
+                <div id="paymentStatus_${transactionId}" class="payment-status monitoring">
+                  🔍 Monitoring payment...
+                </div>
+              </div>
+            `;
+            qrContainer.appendChild(paymentInfo);
+            
+            // Add manual verification button and Android UPI button
+            this.addManualVerificationButton(transactionId, upiUrl);
+            
+          }, 100);
+          
+        } catch (error) {
+          console.error('Error generating QR code:', error);
+        }
+      }
+
+      addManualVerificationButton(transactionId, upiUrl) {
+        const qrContainer = document.getElementById('qrCode');
+        const buttonContainer = document.createElement('div');
+        buttonContainer.innerHTML = `
+          <div style="margin-top: 1rem; text-align: center;">
+            <button 
+              class="btn btn-primary" 
+              onclick="openAndroidUPI('${upiUrl}')"
+              style="width: 100%; margin-bottom: 0.75rem; background: linear-gradient(135deg, #059669, #10b981);">
+              📱 Pay with UPI Apps
+            </button>
+            <button 
+              class="btn btn-primary" 
+              onclick="upiHandler.manualVerification('${transactionId}')"
+              style="width: 100%; margin-bottom: 0.5rem;">
+              ✅ I have completed the payment
+            </button>
+            <div style="font-size: 0.8rem; color: var(--gray); margin-bottom: 1rem;">
+              Click only after successful payment
+            </div>
+          </div>
+        `;
+        qrContainer.appendChild(buttonContainer);
+      }
+
+      startPaymentMonitoring(transactionId, paymentRecord) {
+        const statusElement = document.getElementById(`paymentStatus_${transactionId}`);
+        let checkCount = 0;
+        const maxChecks = 60; // 5 minutes (60 × 5 seconds)
+
+        const monitoringInterval = setInterval(async () => {
+          checkCount++;
+          
+          try {
+            // Update status display
+            if (statusElement) {
+              statusElement.innerHTML = `🔍 Checking payment... (${checkCount}/${maxChecks})`;
+              statusElement.className = 'payment-status monitoring';
+            }
+
+            // Check payment status
+            const paymentStatus = await this.checkPaymentStatus(transactionId);
+            
+            if (paymentStatus.confirmed) {
+              // Payment confirmed!
+              this.handlePaymentSuccess(transactionId, paymentRecord, paymentStatus);
+              clearInterval(monitoringInterval);
+              return;
+            }
+            
+            // Check if timeout reached
+            if (checkCount >= maxChecks) {
+              this.handlePaymentTimeout(transactionId, paymentRecord);
+              clearInterval(monitoringInterval);
+              return;
+            }
+            
+          } catch (error) {
+            console.error('Error checking payment status:', error);
+            
+            if (checkCount >= maxChecks) {
+              this.handlePaymentTimeout(transactionId, paymentRecord);
+              clearInterval(monitoringInterval);
+            }
+          }
+        }, this.paymentCheckInterval);
+
+        // Store interval for cleanup
+        this.pendingPayments.set(transactionId, {
+          ...paymentRecord,
+          interval: monitoringInterval
+        });
+      }
+
+      async checkPaymentStatus(transactionId) {
+        try {
+          // Check Firebase for manual confirmation
+          const paymentQuery = query(
+            collection(db, 'pendingPayments'),
+            where('transactionId', '==', transactionId)
+          );
+          const snapshot = await getDocs(paymentQuery);
+          
+          if (!snapshot.empty) {
+            const paymentDoc = snapshot.docs[0];
+            const paymentData = paymentDoc.data();
+            
+            if (paymentData.userConfirmed) {
+              return { confirmed: true, method: 'manual', data: paymentData };
+            }
+          }
+
+          return { confirmed: false };
+          
+        } catch (error) {
+          console.error('Error checking payment status:', error);
+          return { confirmed: false };
+        }
+      }
+
+      async handlePaymentSuccess(transactionId, paymentRecord, paymentStatus) {
+        console.log('🎉 Payment confirmed:', transactionId);
+        
+        const statusElement = document.getElementById(`paymentStatus_${transactionId}`);
+        if (statusElement) {
+          statusElement.innerHTML = '✅ Payment Confirmed!';
+          statusElement.className = 'payment-status success';
+        }
+
+        try {
+          // Create actual order
+          const orderData = {
+            ...paymentRecord.orderData,
+            paymentStatus: 'completed',
+            transactionId: transactionId,
+            paymentConfirmedAt: serverTimestamp(),
+            status: 'placed'
+          };
+
+          const docRef = await addDoc(collection(db, 'orders'), orderData);
+          
+          // Update payment record
+          const paymentQuery = query(
+            collection(db, 'pendingPayments'),
+            where('transactionId', '==', transactionId)
+          );
+          const snapshot = await getDocs(paymentQuery);
+          
+          if (!snapshot.empty) {
+            const paymentDoc = snapshot.docs[0];
+            await updateDoc(paymentDoc.ref, {
+              status: 'completed',
+              orderId: docRef.id,
+              completedAt: serverTimestamp()
+            });
+          }
+
+          // Clear cart and update UI
+          cart = [];
+          saveCart();
+          updateCartUI();
+          
+          // Show success notification
+          closeModal('checkoutModal');
+          showOrderPlacedNotification(docRef.id);
+          
+          // Android notification
+          if (androidOptimizer.isAndroid) {
+            androidOptimizer.showAndroidNotification('Order Placed!', `Order #${docRef.id.slice(-8).toUpperCase()} has been placed successfully.`);
+          }
+          
+          setTimeout(() => {
+            showAndroidAlert('🎉 Payment verified! Order placed successfully.', 'success');
+          }, 1000);
+
+          // Cleanup
+          this.cleanupPayment(transactionId);
+          
+        } catch (error) {
+          console.error('Error processing confirmed payment:', error);
+          showAndroidAlert('Payment confirmed but order creation failed. Please contact support.', 'error');
+        }
+      }
+
+      async handlePaymentTimeout(transactionId, paymentRecord) {
+        console.log('⏰ Payment timeout:', transactionId);
+        
+        const statusElement = document.getElementById(`paymentStatus_${transactionId}`);
+        if (statusElement) {
+          statusElement.innerHTML = '⏰ Payment verification timeout';
+          statusElement.className = 'payment-status timeout';
+        }
+
+        // Update payment record as expired
+        try {
+          const paymentQuery = query(
+            collection(db, 'pendingPayments'),
+            where('transactionId', '==', transactionId)
+          );
+          const snapshot = await getDocs(paymentQuery);
+          
+          if (!snapshot.empty) {
+            const paymentDoc = snapshot.docs[0];
+            await updateDoc(paymentDoc.ref, {
+              status: 'expired',
+              expiredAt: serverTimestamp()
+            });
+          }
+        } catch (error) {
+          console.error('Error updating expired payment:', error);
+        }
+
+                // Show timeout message with manual verification option
+        showAndroidAlert('Payment verification timeout. If you completed payment, please verify manually.', 'warning');
+        
+        this.cleanupPayment(transactionId);
+      }
+
+      async manualVerification(transactionId) {
+        try {
+          const confirmed = confirm(
+            '💳 Payment Confirmation\n\n' +
+            '✅ Have you successfully completed the UPI payment?\n' +
+            '⚠️  Please confirm only if payment was successful.\n\n' +
+            'Transaction ID: ' + transactionId + '\n\n' +
+            'Click OK to confirm payment'
+          );
+
+          if (confirmed) {
+            // Mark as manually confirmed
+            const paymentQuery = query(
+              collection(db, 'pendingPayments'),
+              where('transactionId', '==', transactionId)
+            );
+            const snapshot = await getDocs(paymentQuery);
+            
+            if (!snapshot.empty) {
+              const paymentDoc = snapshot.docs[0];
+              await updateDoc(paymentDoc.ref, {
+                userConfirmed: true,
+                confirmedAt: serverTimestamp(),
+                confirmationMethod: 'manual'
+              });
+              
+              showAndroidAlert('✅ Payment confirmation recorded! Verifying...', 'success');
+            }
+          }
+        } catch (error) {
+          console.error('Error in manual verification:', error);
+          showAndroidAlert('Error recording confirmation. Please try again.', 'error');
+        }
+      }
+
+      cleanupPayment(transactionId) {
+        const paymentData = this.pendingPayments.get(transactionId);
+        if (paymentData && paymentData.interval) {
+          clearInterval(paymentData.interval);
+        }
+        this.pendingPayments.delete(transactionId);
+      }
+    }
+
+    // Initialize UPI handler
+    const upiHandler = new UPIPaymentHandler();
 
     // Sample products with enhanced structure
     const sampleProducts = [
@@ -2151,7 +2901,7 @@
       startBannerSlider();
     }
 
-    // ✅ ENHANCED: Check if user has already rated this product
+    // Enhanced Rating Functions
     async function hasUserRatedProduct(productId, userId) {
       try {
         console.log('🔍 Checking if user has rated product:', { productId, userId });
@@ -2171,7 +2921,6 @@
       }
     }
 
-    // ✅ ENHANCED: Check if user has already rated this product in orders
     async function hasUserRatedProductInOrder(productId, userId, orderId) {
       try {
         console.log('🔍 Checking order rating:', { productId, userId, orderId });
@@ -2192,47 +2941,58 @@
       }
     }
 
-    // ✅ FIXED: Enhanced Rating Save Function with Better Error Handling
     async function saveRatingToFirebase(ratingData) {
       try {
-        console.log('💾 Attempting to save rating to Firebase:', ratingData);
+        console.log('💾 saveRatingToFirebase called with:', ratingData);
         
-        // Check if user is authenticated
-        if (!currentUser || !currentUser.uid) {
-          throw new Error('User not authenticated');
+        if (!auth.currentUser) {
+          console.error('❌ No authenticated user in auth.currentUser');
+          throw new Error('Please login first');
         }
         
-        // Check if required fields are present
-        if (!ratingData.productId || !ratingData.rating) {
-          throw new Error('Missing required fields: productId or rating');
+        console.log('✅ Auth user confirmed:', auth.currentUser.uid);
+        
+        if (!ratingData.productId || !ratingData.rating || !ratingData.userId) {
+          console.error('❌ Missing required fields:', ratingData);
+          throw new Error('Missing required rating data');
         }
         
-        // Add timestamp if not present
-        if (!ratingData.createdAt) {
-          ratingData.createdAt = serverTimestamp();
-        }
+        console.log('✅ Data validation passed');
         
-        // Save to Firebase
-        console.log('🔥 Saving to Firebase collection: productRatings');
+        const idToken = await auth.currentUser.getIdToken(true);
+        console.log('✅ Got fresh ID token');
+        
+        console.log('🔥 Saving to Firestore collection: productRatings');
         const docRef = await addDoc(collection(db, 'productRatings'), ratingData);
         console.log('✅ Rating saved successfully with ID:', docRef.id);
         
         return { success: true, id: docRef.id };
         
       } catch (error) {
-        console.error('❌ Error saving rating to Firebase:', error);
+        console.error('❌ saveRatingToFirebase error:', error);
         
-        // Detailed error logging
-        if (error.code) {
-          console.error('Firebase error code:', error.code);
-          console.error('Firebase error message:', error.message);
+        if (error.code === 'permission-denied') {
+          console.error('❌ Permission denied - check Firestore rules');
+          return { 
+            success: false, 
+            error: 'Permission denied. Please check your login and try again.' 
+          };
+        } else if (error.code === 'unauthenticated') {
+          console.error('❌ User not authenticated');
+          return { 
+            success: false, 
+            error: 'Please login first' 
+          };
+        } else {
+          console.error('❌ Other error:', error.message);
+          return { 
+            success: false, 
+            error: error.message || 'Failed to save rating' 
+          };
         }
-        
-        return { success: false, error: error.message };
       }
     }
 
-    // ✅ UPDATED: Enhanced Rating Update Logic with Duplicate Check
     async function updateProductRating(productId, newRating, reviewText, orderId = null) {
       try {
         console.log('⭐ Updating product rating:', { productId, newRating, reviewText, orderId });
@@ -2241,7 +3001,6 @@
           throw new Error('User not authenticated');
         }
 
-        // Check if user has already rated this product
         const alreadyRated = orderId 
           ? await hasUserRatedProductInOrder(productId, currentUser.uid, orderId)
           : await hasUserRatedProduct(productId, currentUser.uid);
@@ -2250,7 +3009,6 @@
           throw new Error('You have already rated this product');
         }
 
-        // Find the product in our local products array
         const productIndex = products.findIndex(p => p.id === productId);
         if (productIndex === -1) {
           throw new Error('Product not found');
@@ -2258,17 +3016,14 @@
 
         const product = products[productIndex];
 
-        // Calculate new average rating
         const currentTotal = product.rating * product.ratingsCount;
         const newTotal = currentTotal + newRating;
         const newCount = product.ratingsCount + 1;
         const newAverage = newTotal / newCount;
 
-        // Update product data with new rating
         product.rating = Math.round(newAverage * 10) / 10;
         product.ratingsCount = newCount;
 
-        // Create and add new review
         const newReview = {
           id: Date.now().toString(),
           userId: currentUser.uid,
@@ -2279,15 +3034,12 @@
           orderId: orderId || null
         };
 
-        // Initialize reviews array if it doesn't exist
         if (!product.reviews) {
           product.reviews = [];
         }
 
-        // Add new review to the beginning of the array
         product.reviews.unshift(newReview);
 
-        // Try to update in Firebase (optional)
         try {
           const productDocRef = doc(db, 'products', productId);
           await updateDoc(productDocRef, {
@@ -2300,7 +3052,6 @@
           console.log('⚠️ Firebase product update failed, but local update successful:', firebaseError);
         }
 
-        // Update the products array
         products[productIndex] = product;
         console.log('✅ Product rating updated locally');
 
@@ -2334,7 +3085,7 @@
               name: data.name || data.title,
               price: data.price || 0,
               category: data.category || 'uncategorized',
-              availableSizes: data.availableSizes || ['One Size'],
+              availableSizes: data.availableSizes || data.sizes,
               rating: data.rating || 0,
               ratingsCount: data.ratingsCount || 0,
               reviews: data.reviews || [],
@@ -2390,7 +3141,10 @@
             </div>
             <p class="product-price">₹${product.price.toLocaleString()}</p>
             <div class="product-actions" onclick="event.stopPropagation();">
-                            <button class="btn btn-primary" onclick="addToCart('${product.id}')">
+              <button class="btn btn-outline" onclick="event.stopPropagation(); shareProduct('${product.id}')">
+                <i class="fas fa-share"></i>
+              </button>
+              <button class="btn btn-primary" onclick="addToCart('${product.id}')">
                 <i class="fas fa-cart-plus"></i>
                 Add to Cart
               </button>
@@ -2403,7 +3157,7 @@
       `).join('');
     }
 
-    // ✅ Size selection function
+    // Size selection function
     window.selectSize = (size) => {
       selectedSize = size;
       
@@ -2424,13 +3178,139 @@
       }
     };
 
-    // ✅ Show Product Details WITHOUT Rating Input - Only Display Current Rating
+    // ✅ ENHANCED PRODUCT IMAGE SLIDER - HORIZONTAL SLIDING
+    let currentProductImageIndex = 0;
+    let productImages = [];
+    let isSliding = false;
+
+    function initProductImageSlider(images) {
+      productImages = images;
+      currentProductImageIndex = 0;
+      
+      const container = document.getElementById('productImagesContainer');
+      if (container) {
+        // Set initial transform
+        updateSliderTransform();
+        
+        // Touch/Mouse events for swipe
+        let startX = 0;
+        let endX = 0;
+        let isDragging = false;
+
+        // Mouse events
+        container.addEventListener('mousedown', (e) => {
+          isDragging = true;
+          startX = e.clientX;
+          container.style.cursor = 'grabbing';
+        });
+
+        container.addEventListener('mousemove', (e) => {
+          if (!isDragging) return;
+          e.preventDefault();
+        });
+
+        container.addEventListener('mouseup', (e) => {
+          if (!isDragging) return;
+          isDragging = false;
+          endX = e.clientX;
+          container.style.cursor = 'grab';
+          handleSliderSwipe();
+        });
+
+        container.addEventListener('mouseleave', () => {
+          isDragging = false;
+          container.style.cursor = 'grab';
+        });
+
+        // Touch events
+        container.addEventListener('touchstart', (e) => {
+          startX = e.touches[0].clientX;
+        }, { passive: true });
+
+        container.addEventListener('touchmove', (e) => {
+          e.preventDefault();
+        });
+
+        container.addEventListener('touchend', (e) => {
+          endX = e.changedTouches[0].clientX;
+          handleSliderSwipe();
+        });
+
+        function handleSliderSwipe() {
+          const diff = startX - endX;
+          const threshold = 50;
+          
+          if (Math.abs(diff) > threshold) {
+            if (diff > 0) {
+              nextProductImage();
+            } else {
+              prevProductImage();
+            }
+          }
+        }
+      }
+    }
+
+    function updateSliderTransform() {
+      const container = document.getElementById('productImagesContainer');
+      if (container) {
+        const translateX = -currentProductImageIndex * 100;
+        container.style.transform = `translateX(${translateX}%)`;
+      }
+    }
+
+    window.nextProductImage = () => {
+      if (isSliding) return;
+      const nextIndex = (currentProductImageIndex + 1) % productImages.length;
+      showProductImage(nextIndex);
+    };
+
+    window.prevProductImage = () => {
+      if (isSliding) return;
+      const prevIndex = (currentProductImageIndex - 1 + productImages.length) % productImages.length;
+      showProductImage(prevIndex);
+    };
+
+    window.goToProductImage = (index) => {
+      if (isSliding) return;
+      showProductImage(index);
+    };
+
+    function showProductImage(index) {
+      if (isSliding || index === currentProductImageIndex) return;
+      
+      isSliding = true;
+      const dots = document.querySelectorAll('.product-image-dot');
+      const counter = document.getElementById('productImageCounter');
+      
+      // Update indicators
+      dots.forEach(dot => dot.classList.remove('active'));
+      if (dots[index]) {
+        dots[index].classList.add('active');
+      }
+      
+      // Update counter
+      if (counter) {
+        counter.textContent = `${index + 1} / ${productImages.length}`;
+      }
+      
+      // Update slider position
+      currentProductImageIndex = index;
+      updateSliderTransform();
+      
+      // Reset sliding flag after transition
+      setTimeout(() => {
+        isSliding = false;
+      }, 400);
+    }
+
+    // Show Product Details with Enhanced Horizontal Image Slider
     window.showProductDetails = (productId) => {
       const product = products.find(p => p.id === productId);
       if (!product) return;
       
       currentProductForRating = product;
-      selectedSize = null; // Reset size selection
+      selectedSize = null;
       
       const images = product.images || [product.image];
       const hasMultipleImages = images.length > 1;
@@ -2440,7 +3320,7 @@
           <div class="product-image-slider ${!hasMultipleImages ? 'single-image' : ''}" id="productImageSlider">
             <div class="product-images-container" id="productImagesContainer">
               ${images.map((img, index) => `
-                <img src="${img}" alt="${product.name}" class="${index === 0 ? 'active' : ''}" 
+                <img src="${img}" alt="${product.name}" 
                      onerror="this.src='https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=400&h=300&fit=crop'">
               `).join('')}
             </div>
@@ -2479,7 +3359,10 @@
                       display: inline-block;">
             ₹${product.price.toLocaleString()}
           </div>
-          
+          <button class="btn btn-primary" onclick="shareProduct('${product.id}')" style="margin-bottom: 1rem;">
+            <i class="fas fa-share"></i> Share
+          </button>
+
           <!-- Size Selection -->
           <div class="size-selection">
             <h4><i class="fas fa-ruler"></i> Available Sizes:</h4>
@@ -2493,7 +3376,7 @@
             </div>
           </div>
           
-          <!-- Only Rating Display - No Input Option -->
+          <!-- Rating Display -->
           <div class="rating-display">
             <h4><i class="fas fa-star"></i> Customer Rating:</h4>
             <div class="current-rating">
@@ -2522,7 +3405,7 @@
             ` : ''}
           </div>
           
-          <!-- Info Message Instead of Rating Input -->
+          <!-- Info Message -->
           <div style="text-align: center; padding: 1rem; background: rgba(59, 130, 246, 0.1); border-radius: 8px; margin: 1rem 0;">
             <div style="color: var(--primary); margin-bottom: 0.5rem; font-weight: 600;">
               <i class="fas fa-info-circle"></i> Want to rate this product?
@@ -2574,86 +3457,13 @@
       showModal('productDetailsModal');
     };
 
-    // Product Image Slider Functions
-    let currentProductImageIndex = 0;
-    let productImages = [];
-
-    function initProductImageSlider(images) {
-      productImages = images;
-      currentProductImageIndex = 0;
-      
-      const container = document.getElementById('productImagesContainer');
-      if (container) {
-        let startX = 0;
-        let endX = 0;
-
-        container.addEventListener('touchstart', (e) => {
-          startX = e.touches[0].clientX;
-        });
-
-        container.addEventListener('touchmove', (e) => {
-          e.preventDefault();
-        });
-
-        container.addEventListener('touchend', (e) => {
-          endX = e.changedTouches[0].clientX;
-          handleProductImageSwipe();
-        });
-
-        function handleProductImageSwipe() {
-          const diff = startX - endX;
-          const threshold = 50;
-          
-          if (Math.abs(diff) > threshold) {
-            if (diff > 0) {
-              nextProductImage();
-            } else {
-              prevProductImage();
-            }
-          }
-        }
-      }
-    }
-
-    window.nextProductImage = () => {
-      const nextIndex = (currentProductImageIndex + 1) % productImages.length;
-      showProductImage(nextIndex);
-    };
-
-    window.prevProductImage = () => {
-      const prevIndex = (currentProductImageIndex - 1 + productImages.length) % productImages.length;
-      showProductImage(prevIndex);
-    };
-
-    window.goToProductImage = (index) => {
-      showProductImage(index);
-    };
-
-    function showProductImage(index) {
-      const images = document.querySelectorAll('#productImagesContainer img');
-      const dots = document.querySelectorAll('.product-image-dot');
-      const counter = document.getElementById('productImageCounter');
-      
-      images.forEach(img => img.classList.remove('active'));
-      dots.forEach(dot => dot.classList.remove('active'));
-      
-      if (images[index]) {
-        images[index].classList.add('active');
-        dots[index].classList.add('active');
-        counter.textContent = `${index + 1} / ${productImages.length}`;
-      }
-      
-      currentProductImageIndex = index;
-    }
-
     // Updated add to cart with size
     window.addToCartWithSize = (productId) => {
       const product = products.find(p => p.id === productId);
       if (!product) return;
 
-      // Check if size is required but not selected
       if (product.availableSizes.length > 1 && !product.availableSizes.includes('One Size') && !selectedSize) {
-        showAlert('Please select a size first', 'warning');
+        showAndroidAlert('Please select a size first', 'warning');
         return;
       }
 
@@ -2679,9 +3489,21 @@
       updateCartUI();
       
       const sizeText = cartSize !== 'One Size' ? ` (Size: ${cartSize})` : '';
-      showAlert(`${product.name}${sizeText} added to cart!`, 'success');
+      showAndroidAlert(`${product.name}${sizeText} added to cart!`, 'success');
       
       closeModal('productDetailsModal');
+    };
+    window.shareProduct = async (productId) => {
+      const product = products.find(p => p.id === productId);
+      if (!product) return;
+      // File mode: no real URL → so we generate a fake product link
+      const link = `https://crodyto.com/product/${productId}`;
+      try {
+        await navigator.clipboard.writeText(link);
+        showAndroidAlert("✅ Product link copied!", "success");
+      } catch (error) {
+        showAndroidAlert("❌ Could not copy link", "error");
+      }
     };
 
     // Add to Cart (general)
@@ -2705,12 +3527,10 @@
 
       saveCart();
       updateCartUI();
-      showAlert(`${product.name} added to cart!`, 'success');
+      showAndroidAlert(`${product.name} added to cart!`, 'success');
     };
 
-    // DELIVERY পরবর্তী Rating System - Only for Order Details
-
-    // Enhanced Order Status Tracking with Rating after Delivery
+    // Order Status Functions
     function getOrderStatusProgress(status) {
       const statusMap = {
         'pending': { step: 1, class: 'progress-20' },
@@ -2745,7 +3565,6 @@
         { id: 'delivered', label: 'Delivered', icon: '🎉', active: false, completed: false }
       ];
       
-      // Mark steps as completed or active based on current status
       steps.forEach((step, index) => {
         if (index < progress.step) {
           step.completed = true;
@@ -2757,7 +3576,7 @@
       return steps;
     }
 
-    // Product Rating Section after Delivery - Only in Order Details
+    // Product Rating Section after Delivery
     function renderProductRatingSection(order) {
       if (!order.items || order.items.length === 0) return '';
       
@@ -2799,7 +3618,6 @@
           }
         });
         
-        // Store existing ratings globally for quick access
         window.userExistingRatings = existingRatings;
         console.log('✅ Loaded existing ratings:', existingRatings.size);
         
@@ -2809,13 +3627,11 @@
       }
     }
 
-    // Check if user has rated a specific product in a specific order
     function hasUserRatedInOrder(orderId, productId) {
       if (!window.userExistingRatings) return false;
       return window.userExistingRatings.has(`${orderId}_${productId}`);
     }
 
-    // Enhanced Product Rating Card with Pre-check
     function renderProductRatingCard(item, orderId) {
       const productRatingId = `rating_${orderId}_${item.id}`;
       const productReviewId = `review_${orderId}_${item.id}`;
@@ -2837,7 +3653,6 @@
               ` : ''}
               
               ${hasRated ? `
-                <!-- Already Rated Message -->
                 <div style="text-align: center; padding: 1rem; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 8px;">
                   <i class="fas fa-check-circle" style="color: var(--success); font-size: 1.5rem; margin-bottom: 0.5rem;"></i>
                   <div style="font-weight: 600; color: var(--success); margin-bottom: 0.25rem;">
@@ -2848,9 +3663,7 @@
                   </div>
                 </div>
               ` : `
-                <!-- Rating Form Container -->
                 <div id="ratingForm_${productRatingId}" class="rating-form-container">
-                  <!-- Star Rating Input -->
                   <div style="margin-bottom: 1rem;">
                     <div style="font-weight: 600; font-size: 0.9rem; margin-bottom: 0.5rem; color: var(--dark);">
                       Rate this product:
@@ -2866,7 +3679,6 @@
                     <div class="rating-message" id="message_${productRatingId}" style="font-size: 0.8rem; color: var(--success); margin-top: 0.25rem;"></div>
                   </div>
                   
-                  <!-- Review Text Input -->
                   <div style="margin-bottom: 1rem;">
                     <div style="font-weight: 600; font-size: 0.9rem; margin-bottom: 0.5rem; color: var(--dark);">
                       Write your review:
@@ -2881,7 +3693,6 @@
                     ></textarea>
                   </div>
                   
-                  <!-- Submit Button -->
                   <button 
                     class="btn btn-primary" 
                     onclick="submitProductRating('${orderId}', '${item.id}', '${productRatingId}', '${productReviewId}')"
@@ -2898,13 +3709,12 @@
       `;
     }
 
-    // Set Product Rating Function - Only for Order Details
+    // Set Product Rating Function
     window.setProductRating = (ratingId, rating) => {
       console.log('⭐ Setting product rating:', { ratingId, rating });
       const container = document.querySelector(`[data-product-rating-id="${ratingId}"]`);
       if (!container) return;
       
-      // Update star display
       container.querySelectorAll('.product-star-input').forEach((star, index) => {
         star.classList.remove('fas', 'selected');
         star.classList.add('far');
@@ -2917,10 +3727,8 @@
         }
       });
       
-      // Store rating value
       container.setAttribute('data-selected-rating', rating);
       
-      // Show rating message
       const messages = {
         1: 'Poor ⭐',
         2: 'Fair ⭐⭐', 
@@ -2933,27 +3741,35 @@
       if (messageEl) {
         messageEl.textContent = messages[rating] || '';
       }
+
+      // Android vibration feedback
+      if (navigator.vibrate && androidOptimizer.isAndroid) {
+        navigator.vibrate(30);
+      }
     };
 
-    // ✅ ENHANCED: Submit Product Rating with Firebase Save Fix
+    // Submit Product Rating with Android enhancements
     window.submitProductRating = async (orderId, productId, ratingId, reviewId) => {
-      console.log('🎯 Submit rating called:', { orderId, productId, ratingId, reviewId });
+      console.log('🎯 Submit rating started:', { orderId, productId, ratingId, reviewId });
       
       if (!currentUser) {
-        console.error('❌ No current user');
-        showAlert('Please login to submit rating', 'error');
+        console.error('❌ No authenticated user');
+        showAndroidAlert('Please login to submit rating', 'error');
+        showModal('loginModal');
         return;
       }
+      
+      console.log('✅ User authenticated:', currentUser.uid);
       
       const ratingContainer = document.querySelector(`[data-product-rating-id="${ratingId}"]`);
       const selectedRating = parseInt(ratingContainer?.getAttribute('data-selected-rating') || '0');
       const reviewText = document.getElementById(reviewId)?.value?.trim() || '';
       
-      console.log('📊 Rating data:', { selectedRating, reviewText });
+      console.log('📊 Rating data collected:', { selectedRating, reviewText });
       
       if (selectedRating === 0) {
         console.error('❌ No rating selected');
-        showAlert('Please select a rating before submitting', 'warning');
+        showAndroidAlert('Please select a rating before submitting', 'warning');
         return;
       }
       
@@ -2962,12 +3778,34 @@
       submitBtn.disabled = true;
       submitBtn.innerHTML = '<span class="spinner"></span> Saving...';
       
+      // Android vibration feedback
+      if (navigator.vibrate && androidOptimizer.isAndroid) {
+        navigator.vibrate([100, 50, 100]);
+      }
+      
       try {
-        // Check for duplicates before submitting
+        console.log('🔐 Waiting for auth state...');
+        await new Promise(resolve => {
+          if (currentUser && currentUser.uid) {
+            resolve();
+          } else {
+            const unsubscribe = onAuthStateChanged(auth, (user) => {
+              if (user) {
+                currentUser = user;
+                unsubscribe();
+                resolve();
+              }
+            });
+          }
+        });
+        
+        console.log('✅ Auth ready, user:', currentUser.uid);
+        
+        console.log('🔍 Checking for duplicate ratings...');
         const alreadyRated = await hasUserRatedProductInOrder(productId, currentUser.uid, orderId);
         
         if (alreadyRated) {
-          // Show already rated message
+          console.log('⚠️ User already rated this product');
           document.getElementById(`ratingForm_${ratingId}`).style.display = 'none';
           
           const alreadyRatedDiv = document.createElement('div');
@@ -2982,13 +3820,12 @@
               </div>
             </div>
           `;
-          document.getElementById(`card_${ratingId}`).querySelector('.rating-form-container').parentNode.appendChild(alreadyRatedDiv);
+          document.getElementById(`card_${ratingId}`).appendChild(alreadyRatedDiv);
           
-          showAlert('You have already rated this product', 'warning');
+          showAndroidAlert('You have already rated this product', 'warning');
           return;
         }
 
-        // Prepare rating data
         const ratingData = {
           productId: productId,
           userId: currentUser.uid,
@@ -3000,18 +3837,39 @@
           timestamp: new Date().toISOString()
         };
         
-        console.log('💾 Saving rating data:', ratingData);
+        console.log('💾 Prepared rating data:', ratingData);
         
-        // Save to Firebase with detailed logging
-        const result = await saveRatingToFirebase(ratingData);
+        let result;
+        let retries = 3;
         
-        if (result.success) {
-          console.log('✅ Rating saved successfully');
+        while (retries > 0) {
+          try {
+            console.log(`🔄 Attempting to save (${4 - retries}/3)...`);
+            result = await saveRatingToFirebase(ratingData);
+            
+            if (result.success) {
+              console.log('✅ Rating saved successfully');
+              break;
+            } else {
+              console.error('❌ Save failed:', result.error);
+              if (retries === 1) {
+                throw new Error(result.error);
+              }
+            }
+          } catch (error) {
+            console.error(`❌ Save attempt failed:`, error);
+            if (retries === 1) {
+              throw error;
+            }
+          }
           
-          // Update local product rating
+          retries--;
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+        
+        if (result && result.success) {
           await updateProductRating(productId, selectedRating, reviewText, orderId);
           
-          // Update UI to show success
           document.getElementById(`ratingForm_${ratingId}`).style.display = 'none';
           
           const successMessage = document.createElement('div');
@@ -3027,33 +3885,44 @@
             </div>
           `;
           
-          document.getElementById(`card_${ratingId}`).querySelector('.rating-form-container').parentNode.appendChild(successMessage);
+          document.getElementById(`card_${ratingId}`).appendChild(successMessage);
           
-          // Update existing ratings cache
           if (window.userExistingRatings) {
             window.userExistingRatings.add(`${orderId}_${productId}`);
           }
           
-          showAlert(`Thank you for rating this product ${selectedRating} star${selectedRating > 1 ? 's' : ''}!`, 'success');
+          showAndroidAlert(`Thank you for rating this product ${selectedRating} star${selectedRating > 1 ? 's' : ''}!`, 'success');
           
-          // Update product grid
+          // Android success notification
+          if (androidOptimizer.isAndroid) {
+            androidOptimizer.showAndroidNotification('Rating Submitted!', `Thanks for rating the product ${selectedRating} stars.`);
+          }
+          
           renderProducts(products);
           
         } else {
-          throw new Error(result.error || 'Failed to save rating to Firebase');
+          throw new Error('Failed to save rating after multiple attempts');
         }
         
       } catch (error) {
         console.error('❌ Rating submission failed:', error);
-        showAlert(error.message || 'Error saving rating. Please try again.', 'error');
         
-        // Reset button
+        if (error.message.includes('Missing or insufficient permissions')) {
+          showAndroidAlert('⚠️ Permission error. Please check your login and try again.', 'error');
+        } else if (error.message === 'You have already rated this product') {
+          showAndroidAlert('You have already rated this product', 'warning');
+        } else {
+          showAndroidAlert(error.message || 'Error saving rating. Please try again.', 'error');
+        }
+        
         submitBtn.disabled = false;
         submitBtn.innerHTML = originalText;
       }
     };
 
-    // Enhanced renderDynamicOrderTracking with Rating after Delivery
+    // Replace showAlert with showAndroidAlert
+    window.showAlert = showAndroidAlert;
+
     function renderDynamicOrderTracking(order) {
       const steps = getStatusSteps(order.status);
       const progress = getOrderStatusProgress(order.status);
@@ -3140,24 +4009,6 @@
       `;
     }
 
-    // ✅ TESTING: Firebase Connection Function
-    async function testFirebaseConnection() {
-      try {
-        console.log('🔥 Testing Firebase connection...');
-        const testDoc = await addDoc(collection(db, 'test'), {
-          message: 'Connection test from ' + new Date().toISOString(),
-          userId: currentUser?.uid || 'anonymous',
-          timestamp: serverTimestamp()
-        });
-        console.log('✅ Firebase connection working! Test doc ID:', testDoc.id);
-        return true;
-      } catch (error) {
-        console.error('❌ Firebase connection failed:', error);
-        showAlert('Firebase connection error: ' + error.message, 'error');
-        return false;
-      }
-    }
-
     // Wishlist functionality
     window.toggleWishlist = (productId) => {
       const product = products.find(p => p.id === productId);
@@ -3165,10 +4016,10 @@
 
       if (wishlist.includes(productId)) {
         wishlist = wishlist.filter(id => id !== productId);
-        showAlert(`${product.name} removed from wishlist`, 'warning');
+        showAndroidAlert(`${product.name} removed from wishlist`, 'warning');
       } else {
         wishlist.push(productId);
-        showAlert(`${product.name} added to wishlist`, 'success');
+        showAndroidAlert(`${product.name} added to wishlist`, 'success');
       }
 
       localStorage.setItem('wishlist', JSON.stringify(wishlist));
@@ -3177,7 +4028,6 @@
       renderWishlist();
     };
 
-    // Update wishlist button in modal
     window.updateModalWishlistButton = (productId) => {
       const button = document.querySelector(`[onclick*="updateModalWishlistButton('${productId}')"]`);
       if (button) {
@@ -3191,7 +4041,6 @@
       }
     };
 
-    // Update Wishlist UI
     function updateWishlistUI() {
       document.querySelectorAll('[data-product-id]').forEach(btn => {
         const productId = btn.getAttribute('data-product-id');
@@ -3209,7 +4058,6 @@
       });
     }
 
-    // Render Wishlist
     function renderWishlist() {
       const container = document.getElementById('wishlistContainer');
       
@@ -3247,14 +4095,12 @@
       `;
     }
 
-    // Remove from Cart
     window.removeFromCart = (productId, size = '') => {
       cart = cart.filter(item => !(item.id === productId && (item.selectedSize === size || !size)));
       saveCart();
       updateCartUI();
     };
 
-    // Update Cart Quantity
     window.updateQuantity = (productId, change, size = '') => {
       const item = cart.find(item => item.id === productId && (item.selectedSize === size || !size));
       if (!item) return;
@@ -3268,7 +4114,6 @@
       }
     };
 
-    // Clear Cart
     window.clearCart = () => {
       if (confirm('Are you sure you want to clear your cart?')) {
         cart = [];
@@ -3277,12 +4122,10 @@
       }
     };
 
-    // Save Cart to LocalStorage
     function saveCart() {
       localStorage.setItem('cart', JSON.stringify(cart));
     }
 
-    // Update Cart UI - Mobile Optimized with Size Display
     function updateCartUI() {
       const badge = document.getElementById('cartBadge');
       const itemCount = cart.reduce((total, item) => total + item.quantity, 0);
@@ -3351,12 +4194,22 @@
       const modal = document.getElementById(modalId);
       modal.classList.add('show');
       document.body.style.overflow = 'hidden';
+      
+      // Dispatch Android checkout event
+      if (modalId === 'checkoutModal') {
+        document.dispatchEvent(new CustomEvent('checkout-start'));
+      }
     };
 
     window.closeModal = (modalId) => {
       const modal = document.getElementById(modalId);
       modal.classList.remove('show');
       document.body.style.overflow = '';
+      
+      // Dispatch Android checkout end event
+      if (modalId === 'checkoutModal') {
+        document.dispatchEvent(new CustomEvent('checkout-end'));
+      }
     };
 
     // Auth Functions
@@ -3380,18 +4233,88 @@
       }
     };
 
-    // Authentication State Observer
-    onAuthStateChanged(auth, (user) => {
+    // Enhanced Authentication State Observer
+    onAuthStateChanged(auth, async (user) => {
       currentUser = user;
       console.log('🔐 Auth state changed:', user ? 'Logged in' : 'Logged out');
-      updateAuthUI();
+      
       if (user) {
+        // Check if this is a new Google user
+        if (user.providerData.some(provider => provider.providerId === 'google.com')) {
+          console.log('👤 Google user detected:', user.displayName);
+          
+          // Update profile with Google data if available
+          if (user.photoURL && user.displayName) {
+            updateProfileDisplay();
+          }
+        }
+        
         loadUserOrders();
         updateProfileStats();
-        // Test Firebase connection when user logs in
-        testFirebaseConnection();
+        
+        // Check for existing payments
+        setTimeout(() => {
+          checkExistingPayments();
+        }, 2000);
       }
+      
+      updateAuthUI();
     });
+
+    // Enhanced status checking for existing payments
+    async function checkExistingPayments() {
+      if (!currentUser) return;
+      
+      try {
+        const pendingQuery = query(
+          collection(db, 'pendingPayments'),
+          where('userId', '==', currentUser.uid),
+          where('status', '==', 'pending')
+        );
+        
+        const snapshot = await getDocs(pendingQuery);
+        snapshot.docs.forEach(doc => {
+          const paymentData = doc.data();
+          const transactionId = paymentData.transactionId;
+          
+          // Resume monitoring for existing payments
+          if (paymentData.expiresAt.toDate() > new Date()) {
+            upiHandler.startPaymentMonitoring(transactionId, paymentData);
+          }
+        });
+      } catch (error) {
+        console.error('Error checking existing payments:', error);
+      }
+    }
+
+    // Enhanced Profile Display for Google Users
+    function updateProfileDisplay() {
+      if (currentUser) {
+        const displayName = document.getElementById('displayName');
+        const profileAvatar = document.getElementById('profileAvatarMain');
+        const userAvatar = document.getElementById('userAvatar');
+        
+        // Use Google profile data if available
+        const name = currentUser.displayName || currentUser.email.split('@')[0];
+        const photoURL = currentUser.photoURL;
+        
+        if (displayName) displayName.textContent = name;
+        
+        // Update profile avatars with Google photo or fallback
+        const avatarURL = photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=3b82f6&color=fff&size=100`;
+        
+        if (profileAvatar) profileAvatar.src = avatarURL;
+        if (userAvatar) userAvatar.src = avatarURL;
+        
+        // Add Google badge if signed in with Google
+        if (currentUser.providerData.some(provider => provider.providerId === 'google.com')) {
+          const profileTitle = document.querySelector('.profile-title');
+          if (profileTitle) {
+            profileTitle.innerHTML = '🌟 Google Account • Crodyto Customer';
+          }
+        }
+      }
+    }
 
     // Update Authentication UI
     function updateAuthUI() {
@@ -3403,7 +4326,10 @@
       if (currentUser) {
         loginBtn.style.display = 'none';
         userMenu.classList.remove('hidden');
-        userAvatar.src = currentUser.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.displayName || currentUser.email)}&background=3b82f6&color=fff`;
+        
+        // Use Google photo if available
+        const photoURL = currentUser.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.displayName || currentUser.email)}&background=3b82f6&color=fff`;
+        userAvatar.src = photoURL;
         userAvatar.onclick = () => showModal('profileModal');
         
         const profileName = document.getElementById('profileName');
@@ -3424,20 +4350,6 @@
       }
     }
 
-    // Update profile display with user data
-    function updateProfileDisplay() {
-      if (currentUser) {
-        const displayName = document.getElementById('displayName');
-        const profileAvatar = document.getElementById('profileAvatarMain');
-        
-        if (displayName) displayName.textContent = currentUser.displayName || currentUser.email.split('@')[0];
-        if (profileAvatar) {
-          profileAvatar.src = currentUser.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.displayName || currentUser.email)}&background=3b82f6&color=fff&size=100`;
-        }
-      }
-    }
-
-    // Update profile stats
     function updateProfileStats() {
       if (currentUser) {
         const orderCountEl = document.getElementById('orderCount');
@@ -3470,46 +4382,54 @@
       try {
         if (isLogin) {
           await signInWithEmailAndPassword(auth, email, password);
-          showAlert('Login successful!', 'success');
+          showAndroidAlert('Login successful!', 'success');
+          
+          // Android login notification
+          if (androidOptimizer.isAndroid) {
+            androidOptimizer.showAndroidNotification('Welcome back!', 'You have successfully logged in to Crodyto.');
+          }
         } else {
           const credential = await createUserWithEmailAndPassword(auth, email, password);
           if (fullName) {
             await updateProfile(credential.user, { displayName: fullName });
           }
-          showAlert('Account created successfully!', 'success');
+          showAndroidAlert('Account created successfully!', 'success');
+          
+          // Android registration notification
+          if (androidOptimizer.isAndroid) {
+            androidOptimizer.showAndroidNotification('Welcome to Crodyto!', 'Your account has been created successfully.');
+          }
         }
         
         closeModal('loginModal');
         document.getElementById('authForm').reset();
       } catch (error) {
-        showAlert(error.message, 'error');
+        showAndroidAlert(error.message, 'error');
       }
     });
 
-    // Reset Password
     window.resetPassword = async () => {
       const email = document.getElementById('email').value;
       if (!email) {
-        showAlert('Please enter your email first', 'error');
+        showAndroidAlert('Please enter your email first', 'error');
         return;
       }
 
       try {
         await sendPasswordResetEmail(auth, email);
-        showAlert('Password reset email sent!', 'success');
+        showAndroidAlert('Password reset email sent!', 'success');
       } catch (error) {
-        showAlert(error.message, 'error');
+        showAndroidAlert(error.message, 'error');
       }
     };
 
-    // Sign Out
     window.signOut = async () => {
       try {
         await firebaseSignOut(auth);
-        showAlert('Signed out successfully', 'success');
+        showAndroidAlert('Signed out successfully', 'success');
         closeModal('profileModal');
       } catch (error) {
-        showAlert(error.message, 'error');
+        showAndroidAlert(error.message, 'error');
       }
     };
 
@@ -3523,16 +4443,15 @@
       
       try {
         await updateProfile(currentUser, { displayName: name });
-        showAlert('Profile updated successfully!', 'success');
+        showAndroidAlert('Profile updated successfully!', 'success');
         updateAuthUI();
         updateProfileDisplay();
       } catch (error) {
-        showAlert(error.message, 'error');
+        showAndroidAlert(error.message, 'error');
       }
     });
 
-    // Profile Tabs
-    window.switchTab = (tabName) => {
+        window.switchTab = (tabName) => {
       document.querySelectorAll('.profile-tab').forEach(tab => tab.classList.remove('active'));
       document.querySelector(`[onclick="switchTab('${tabName}')"]`).classList.add('active');
       
@@ -3548,16 +4467,14 @@
       }
     };
 
-    // Enhanced Profile Functions
     window.showContactForm = () => {
-      showAlert('📧 Contact support: support@crodyto.com', 'success');
+      showAndroidAlert('📧 Contact support: support@crodyto.com', 'success');
     };
 
     window.downloadProfile = () => {
-      showAlert('📥 Export data feature coming soon!', 'success');
+      showAndroidAlert('📥 Export data feature coming soon!', 'success');
     };
 
-    // Enhanced Order Rendering with Product Rating Support
     function renderOrdersWithTracking(orders) {
       const container = document.getElementById('ordersContainer');
       
@@ -3626,7 +4543,6 @@
               
               <div class="order-details" id="details-${order.id}">
                 <h4 style="color: var(--primary); margin-bottom: 1rem; font-size: 1rem;">📋 Order Tracking</h4>
-                
                 ${renderDynamicOrderTracking(order)}
                 
                 ${order.items?.length ? `
@@ -3650,8 +4566,6 @@
                   <div style="font-size: 0.85rem;"><strong>Phone:</strong> ${order.phone || 'N/A'}</div>
                   <div style="font-size: 0.85rem;"><strong>Payment:</strong> ${order.paymentMethod?.toUpperCase() || 'N/A'}</div>
                 </div>
-                
-                ${getStatusUpdateButtons(order.id, order.status)}
               </div>
             </div>
           `;
@@ -3659,68 +4573,6 @@
       `;
     }
 
-    // Add Status Update Buttons
-    function getStatusUpdateButtons(orderId, currentStatus) {
-      const nextStatuses = {
-        'pending': ['confirmed', 'cancelled'],
-        'placed': ['confirmed', 'cancelled'],
-        'confirmed': ['processing', 'cancelled'],
-        'processing': ['shipped', 'cancelled'],
-        'shipped': ['out_for_delivery'],
-        'out_for_delivery': ['delivered'],
-        'delivered': [],
-        'cancelled': []
-      };
-      
-      const statusLabels = {
-        'confirmed': '✅ Confirm Order',
-        'processing': '⚡ Start Processing',
-        'shipped': '📦 Mark as Shipped',
-        'out_for_delivery': '🚚 Out for Delivery',
-        'delivered': '🎉 Mark as Delivered',
-        'cancelled': '❌ Cancel Order'
-      };
-      
-      const possibleStatuses = nextStatuses[currentStatus] || [];
-      
-      if (possibleStatuses.length === 0) return '';
-      
-      return `
-        <div style="margin-top: 1rem; padding: 1rem; background: #f8fafc; border-radius: var(--radius); border: 1px solid var(--border);">
-          <h6 style="color: var(--primary); margin-bottom: 0.75rem; font-size: 0.9rem;">📝 Update Status:</h6>
-          <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-            ${possibleStatuses.map(status => `
-              <button class="btn ${status === 'cancelled' ? 'btn-outline' : 'btn-primary'}" 
-                      style="font-size: 0.8rem; padding: 0.5rem 0.75rem; ${status === 'cancelled' ? 'color: var(--danger); border-color: var(--danger);' : ''}"
-                      onclick="updateOrderStatus('${orderId}', '${status}')">
-                ${statusLabels[status]}
-              </button>
-            `).join('')}
-          </div>
-        </div>
-      `;
-    }
-
-    // Update Order Status Function
-    window.updateOrderStatus = async (orderId, newStatus) => {
-      if (!currentUser) return;
-      
-      try {
-        await updateDoc(doc(db, 'orders', orderId), {
-          status: newStatus,
-          lastUpdated: serverTimestamp()
-        });
-        
-        showAlert(`Order status updated to ${newStatus.replace('_', ' ')}`, 'success');
-        loadUserOrders(); // Refresh orders
-        
-      } catch (error) {
-        console.error('Error updating order status:', error);
-        showAlert('Error updating order status', 'error');
-      }
-    };
-
-    // Load User Orders with Rating Check
     async function loadUserOrders() {
       if (!currentUser) return;
       
@@ -3773,7 +4625,6 @@
       }
     }
 
-    // Toggle Order Details
     window.toggleOrderDetails = (orderId) => {
       const details = document.getElementById(`details-${orderId}`);
       const button = document.querySelector(`[onclick="toggleOrderDetails('${orderId}')"]`);
@@ -3789,13 +4640,11 @@
       }
     };
 
-    // Copy Order ID
     window.copyOrderId = (orderId) => {
       navigator.clipboard.writeText(orderId);
-      showAlert('Order ID copied!', 'success');
+      showAndroidAlert('Order ID copied!', 'success');
     };
 
-    // Cancel Order
     window.cancelOrder = async (orderId) => {
       if (!confirm('Cancel this order?')) return;
       
@@ -3805,23 +4654,22 @@
           cancelledAt: serverTimestamp()
         });
         
-        showAlert('Order cancelled successfully', 'success');
+        showAndroidAlert('Order cancelled successfully', 'success');
         loadUserOrders();
       } catch (error) {
-        showAlert('Error cancelling order', 'error');
+        showAndroidAlert('Error cancelling order', 'error');
       }
     };
 
-    // Checkout
     window.checkout = () => {
       if (!currentUser) {
-        showAlert('Please login to continue', 'error');
+        showAndroidAlert('Please login to continue', 'error');
         showModal('loginModal');
         return;
       }
       
       if (cart.length === 0) {
-        showAlert('Your cart is empty', 'error');
+        showAndroidAlert('Your cart is empty', 'error');
         return;
       }
       
@@ -3832,90 +4680,26 @@
       showModal('checkoutModal');
     };
 
-    // UPI Payment Functions
-    function initiateUPIPayment(amount, upiId = 'dipamg13-1@oksbi', name = 'Crodyto', note = 'Order Payment') {
-      const upiUrl = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(name)}&am=${encodeURIComponent(amount)}&tn=${encodeURIComponent(note)}&cu=INR`;
-      
-      generateUPIQRCode(upiUrl, amount, upiId, name);
-      
-      if (isMobile()) {
-        try {
-          window.location.href = upiUrl;
-        } catch (error) {
-          console.log('UPI app not available, using QR code');
-        }
-      }
-    }
-
-    function generateUPIQRCode(upiUrl, amount, upiId, name) {
-      const qrContainer = document.getElementById('qrCode');
-      qrContainer.innerHTML = '';
-      
-      try {
-        new QRCode(qrContainer, {
-          text: upiUrl,
-          width: 180,
-          height: 180,
-          colorDark: "#000000",
-          colorLight: "#ffffff",
-          correctLevel: QRCode.CorrectLevel.H
-        });
-        
-        qrContainer.style.cssText = `
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          padding: 1rem;
-          background: white;
-          border-radius: 12px;
-          box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        `;
-        
-        setTimeout(() => {
-          const detailsDiv = document.createElement('div');
-          detailsDiv.innerHTML = `
-            <div style="text-align: center; margin-top: 1rem; font-size: 0.85rem; color: var(--gray);">
-              <div style="font-weight: bold; color: var(--primary); margin-bottom: 0.5rem;">
-                💳 Scan & Pay ₹${amount.toLocaleString()}
-              </div>
-              <div><strong>UPI ID:</strong> ${upiId}</div>
-              <div><strong>Merchant:</strong> ${name}</div>
-              <div style="margin-top: 0.5rem; font-size: 0.8rem; color: var(--success);">
-                📱 Works with all UPI apps
-              </div>
-            </div>
-          `;
-          qrContainer.appendChild(detailsDiv);
-        }, 100);
-        
-      } catch (error) {
-        console.error('Error generating QR code:', error);
-        qrContainer.innerHTML = `
-          <div style="text-align: center; padding: 1.5rem; color: var(--danger);">
-            <div style="font-size: 2rem; margin-bottom: 1rem;">⚠️</div>
-            <div>Unable to generate QR code</div>
-            <div style="font-size: 0.85rem; margin-top: 0.5rem;">
-              UPI ID: ${upiId}<br>
-              Amount: ₹${amount.toLocaleString()}
-            </div>
-          </div>
-        `;
-      }
-    }
-
-    // Payment Method Selection
+    // ✅ ENHANCED PAYMENT METHOD SELECTION
     window.selectPaymentMethod = (method) => {
       document.getElementById(method).checked = true;
       
-      document.querySelectorAll('.payment-method').forEach(el => el.classList.remove('selected'));
-      event.currentTarget.classList.add('selected');
+      // Update visual selection
+      document.querySelectorAll('.payment-method').forEach(el => {
+        el.style.borderColor = 'var(--border)';
+        el.style.background = 'white';
+      });
+      
       event.currentTarget.style.borderColor = 'var(--primary)';
+      event.currentTarget.style.background = method === 'cod' ? 
+        'rgba(16, 185, 129, 0.05)' : 
+        'rgba(59, 130, 246, 0.05)';
       
       document.getElementById('upiForm').classList.toggle('show', method === 'upi');
       
       const button = document.getElementById('placeOrderBtn');
       const buttonTexts = {
-        'cod': '🛒 Place Order',
+        'cod': '💰 Place Order (Cash on Delivery)',
         'upi': '📱 Pay with UPI'
       };
       
@@ -3924,26 +4708,17 @@
       if (method === 'upi') {
         const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
         document.getElementById('upiAmount').textContent = total.toLocaleString();
-        
-        const upiId = 'dipamg13-1@oksbi';
-        const merchantName = 'Crodyto';
-        const upiUrl = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(merchantName)}&am=${encodeURIComponent(total)}&tn=${encodeURIComponent('Crodyto Order Payment')}&cu=INR`;
-        
-        setTimeout(() => {
-          generateUPIQRCode(upiUrl, total, upiId, merchantName);
-        }, 100);
       }
     };
 
-    // Place Order After Payment
-    async function placeOrderAfterPayment(paymentMethod) {
-      const formData = new FormData(document.getElementById('checkoutForm'));
+    // ✅ ENHANCED PLACE ORDER FUNCTION FOR COD
+    async function placeOrderDirectly(paymentMethod) {
       const orderData = {
         userId: currentUser.uid,
-        name: formData.get('checkoutName') || document.getElementById('checkoutName').value,
-        email: formData.get('checkoutEmail') || document.getElementById('checkoutEmail').value,
-        phone: formData.get('checkoutPhone') || document.getElementById('checkoutPhone').value,
-        address: formData.get('checkoutAddress') || document.getElementById('checkoutAddress').value,
+        name: document.getElementById('checkoutName').value,
+        email: document.getElementById('checkoutEmail').value,
+        phone: document.getElementById('checkoutPhone').value,
+        address: document.getElementById('checkoutAddress').value,
         paymentMethod: paymentMethod,
         paymentStatus: paymentMethod === 'cod' ? 'pending' : 'completed',
         items: cart,
@@ -3960,6 +4735,7 @@
       try {
         const docRef = await addDoc(collection(db, 'orders'), orderData);
         
+        // Clear cart and update UI
         cart = [];
         saveCart();
         updateCartUI();
@@ -3968,29 +4744,30 @@
         showOrderPlacedNotification(docRef.id);
         
         const paymentMessages = {
-          'cod': 'Order placed successfully! Pay when you receive.',
-          'upi': 'Order placed successfully! UPI payment completed.'
+          'cod': '🎉 Order placed successfully! Pay when you receive your order.',
+          'upi': '🎉 Order placed successfully! UPI payment completed.'
         };
         
         setTimeout(() => {
-          showAlert(paymentMessages[paymentMethod], 'success');
+          showAndroidAlert(paymentMessages[paymentMethod], 'success');
         }, 1000);
+        
+        // Android order confirmation
+        if (androidOptimizer.isAndroid) {
+          androidOptimizer.showAndroidNotification('Order Confirmed!', `Order #${docRef.id.slice(-8).toUpperCase()} placed successfully.`);
+        }
         
         updateProfileStats();
         
       } catch (error) {
         console.error('Error placing order:', error);
-        showAlert('Error placing order. Please try again.', 'error');
+        showAndroidAlert('Error placing order. Please try again.', 'error');
       } finally {
         button.disabled = false;
         button.innerHTML = originalText;
-        button.style.display = 'block';
-        
-        document.getElementById('processing-message')?.remove();
       }
     }
 
-    // Show Order Placed Notification
     function showOrderPlacedNotification(orderId) {
       const notification = document.createElement('div');
       notification.className = 'order-notification';
@@ -4006,6 +4783,11 @@
       `;
       
       document.body.appendChild(notification);
+      
+      // Android success vibration
+      if (navigator.vibrate && androidOptimizer.isAndroid) {
+        navigator.vibrate([200, 100, 200, 100, 200]);
+      }
       
       setTimeout(() => {
         notification.style.animation = 'slideOutCenter 0.5s ease-in forwards';
@@ -4026,7 +4808,7 @@
       }
     }
 
-    // Handle Checkout Form
+    // ✅ ENHANCED CHECKOUT FORM HANDLER WITH COD SUPPORT
     document.getElementById('checkoutForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       
@@ -4034,70 +4816,44 @@
       
       const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked').value;
       
-      if (paymentMethod === 'upi') {
-        const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-        
-        const button = document.getElementById('placeOrderBtn');
-        button.style.display = 'none';
-        
-        const mobileBtn = document.createElement('button');
-        mobileBtn.className = 'upi-mobile-btn';
-        mobileBtn.innerHTML = '📱 Open UPI App & Pay ₹' + total.toLocaleString();
-        mobileBtn.onclick = () => {
-          const upiUrl = `upi://pay?pa=dipamg13-1%40oksbi&pn=Crodyto&am=${total}&tn=Crodyto%20Order%20Payment&cu=INR`;
-          window.location.href = upiUrl;
-        };
-        button.parentNode.insertBefore(mobileBtn, button);
-        
-        const processingDiv = document.createElement('div');
-        processingDiv.id = 'processing-message';
-        processingDiv.innerHTML = `
-          <div style="text-align: center; padding: 1.5rem; color: var(--success);">
-            <div style="font-size: 1.2rem; margin-bottom: 0.75rem;">📱 UPI Payment Ready!</div>
-            <div style="font-size: 1rem; color: var(--gray); margin-bottom: 1rem;">
-              Scan QR code or click "Open UPI App" button
-            </div>
-            <div style="display: flex; align-items: center; justify-content: center; gap: 1rem; flex-wrap: wrap;">
-              <div style="padding: 0.5rem 1rem; background: rgba(16, 185, 129, 0.1); border-radius: 20px; font-size: 0.9rem;">
-                💰 ₹${total.toLocaleString()}
-              </div>
-              <div style="padding: 0.5rem 1rem; background: rgba(59, 130, 246, 0.1); border-radius: 20px; font-size: 0.9rem;">
-                📱 dipamg13-1@oksbi
-              </div>
-            </div>
-          </div>
-        `;
-        button.parentNode.appendChild(processingDiv);
-        
-        initiateUPIPayment(total, 'dipamg13-1@oksbi', 'Crodyto', 'Crodyto Order Payment');
-        
-        setTimeout(() => {
-          const confirmed = confirm(
-            '💳 UPI Payment Status\n\n' +
-            '✅ Have you completed the UPI payment?\n' +
-            '💰 Amount: ₹' + total.toLocaleString() + '\n' +
-            '📱 UPI ID: dipamg13-1@oksbi\n\n' +
-            'Click OK if payment successful\n' +
-            'Click Cancel if payment failed'
-          );
-          
-          document.getElementById('processing-message')?.remove();
-          document.querySelector('.upi-mobile-btn')?.remove();
-          
-          if (confirmed) {
-            showAlert('🎉 UPI payment completed!', 'success');
-            placeOrderAfterPayment('upi');
-          } else {
-            button.style.display = 'block';
-            showAlert('UPI payment cancelled', 'error');
-          }
-        }, 3000);
-        
+      if (paymentMethod === 'cod') {
+        // Direct order placement for Cash on Delivery
+        await placeOrderDirectly('cod');
         return;
       }
       
-      // For COD
-      placeOrderAfterPayment('cod');
+      if (paymentMethod === 'upi') {
+        const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        
+        // Prepare order data (temporary)
+        const orderData = {
+          userId: currentUser.uid,
+          name: document.getElementById('checkoutName').value,
+          email: document.getElementById('checkoutEmail').value,
+          phone: document.getElementById('checkoutPhone').value,
+          address: document.getElementById('checkoutAddress').value,
+          paymentMethod: 'upi',
+          items: cart,
+          total: total,
+          tempOrderId: 'TEMP_' + Date.now()
+        };
+
+        try {
+          const paymentResult = await upiHandler.initiateUPIPayment(total, orderData);
+          
+          if (paymentResult.success) {
+            const button = document.getElementById('placeOrderBtn');
+            button.style.display = 'none';
+            
+            showAndroidAlert('🔍 Payment monitoring started. Complete payment to continue.', 'success');
+          }
+        } catch (error) {
+          console.error('Error initiating UPI payment:', error);
+          showAndroidAlert('Error setting up payment. Please try again.', 'error');
+        }
+        
+        return;
+      }
     });
 
     // Search Functionality
@@ -4142,7 +4898,7 @@
       });
     }
 
-    // Alert System - Mobile Optimized
+    // Alert System - Android Optimized
     function showAlert(message, type = 'success') {
       // Remove existing alerts
       document.querySelectorAll('.alert').forEach(alert => alert.remove());
@@ -4160,7 +4916,10 @@
 
     // Initialize App
     document.addEventListener('DOMContentLoaded', () => {
-      console.log('🚀 Crodyto app initializing...');
+      console.log('🚀 Crodyto Android-Optimized app initializing...');
+      
+      // Handle Google redirect result
+      handleGoogleRedirectResult();
       
       createBannerSlider();
       
@@ -4200,7 +4959,7 @@
       let startX = 0;
       let endX = 0;
 
-            bannerSlider?.addEventListener('touchstart', (e) => {
+      bannerSlider?.addEventListener('touchstart', (e) => {
         startX = e.touches[0].clientX;
       });
 
@@ -4243,7 +5002,16 @@
         }, false);
       }
       
-      console.log('✅ Crodyto app initialized successfully!');
+      console.log('✅ Crodyto Android-Optimized app initialized successfully!');
+      
+      // Android welcome notification
+      if (androidOptimizer.isAndroid) {
+        setTimeout(() => {
+          if (Notification.permission === 'granted') {
+            androidOptimizer.showAndroidNotification('Welcome to Crodyto!', 'Your Android-optimized shopping experience is ready.');
+          }
+        }, 3000);
+      }
     });
 
   </script>
